@@ -59,6 +59,10 @@ impl CodeLine {
     pub fn address (addr: u16) -> Self {
         CodeLine::NextAddress(Address(addr))
     }
+
+    pub fn parse(line: &str) -> Self {
+        todo!()
+    }
 }
 
 #[derive(Debug, PartialEq)]
@@ -69,8 +73,8 @@ impl Code {
     fn new(lines: Vec<CodeLine>) -> Self {
         Self { lines}
     }
-    fn parse(_code: &str) -> Self {
-        todo!()
+    fn parse(code: &str) -> Self {
+        Code::new(code.lines().map(CodeLine::parse).collect())
     }
     fn to_mvn(&self) -> &'static str {
         todo!()
@@ -81,6 +85,17 @@ impl Code {
 mod tests {
     use super::*;
     use indoc::indoc;
+
+    #[test]
+    fn should_returns_line_code_given_asm_mneumonic() {
+        assert_eq!(CodeLine::parse("VAL_A   K   /0001"), CodeLine::with_label("VAL_B", Mneumonic::const_val(2)));
+        assert_eq!(CodeLine::parse("VAL_B   K   /0002"), CodeLine::with_label("RESLT", Mneumonic::const_val(0)));
+        assert_eq!(CodeLine::parse("RESLT   K   /0000"), CodeLine::with_label("MAIN", Mneumonic::load("VAL_A")));
+        assert_eq!(CodeLine::parse("@   /0100"), CodeLine::address(0x100));
+        assert_eq!(CodeLine::parse("MAIN    LD  VAL_A"), CodeLine::mneumonic(Mneumonic::add("VAL_B")));
+        assert_eq!(CodeLine::parse("AD  VAL_B"), CodeLine::mneumonic(Mneumonic::add("VAL_B")));
+        assert_eq!(CodeLine::parse("MM  RESLT"), CodeLine::mneumonic(Mneumonic::store("RESLT")));
+    }
 
     #[test]
     fn should_returns_code_given_asm() {
