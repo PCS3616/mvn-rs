@@ -43,6 +43,18 @@ impl Mneumonic {
             _ => panic!("Invalid mneumonic")
         }
     }
+
+    pub fn value(mneumonic: Mneumonic) -> u16 {
+        match mneumonic {
+            // Pseudo Instructions
+            Mneumonic::Constant(_) => 0x0000,
+            Mneumonic::Address(_) => 0x0000,
+
+            Mneumonic::Add(_) => 0x4000,
+            Mneumonic::Load(_) => 0x8000,
+            Mneumonic::Store(_) => 0x9000,
+        }
+    }
 }
 
 #[derive(Debug, PartialEq)]

@@ -14,7 +14,12 @@ impl Code {
              .collect())
     }
     pub fn to_mvn(&self) -> &'static str {
-        todo!()
+        todo!();
+    }
+
+    pub fn label_index(&self, label: &str) -> usize {
+        let lines = &self.0;
+        lines.into_iter().position(|l| l.0 == Some(label)).unwrap()
     }
 }
 
