@@ -1,8 +1,9 @@
 use nom::IResult;
+use nom::combinator::map;
 
 use crate::parser::util::identifier;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub struct Label<'a>(&'a str);
 
 impl<'a> Label<'a> {
@@ -11,8 +12,10 @@ impl<'a> Label<'a> {
     }
 
     pub fn parse(input: &str) -> IResult<&str, Label> {
-        let (rest, label) = identifier(input)?;
-        Ok((rest, Label::new(label)))
+        map(
+            identifier,
+            |out: &str| Label::new(out)
+        )(input)
     }
 }
 

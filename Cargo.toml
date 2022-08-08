@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 indoc = "1.0.6"
 nom = "7.1.1"
+num-traits = "0.2.15"
 regex = "1.6.0"
 
 [dev-dependencies]
