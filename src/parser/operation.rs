@@ -7,7 +7,7 @@ pub struct Operation<'a>(Mneumonic, Operand<'a>);
 
 impl<'a> Operation<'a> {
     pub fn new(mneumonic: Mneumonic, operand: Operand<'a>) -> Self {
-        Operation(mneumonic, operand)
+        Self(mneumonic, operand)
     }
 
     pub fn parse(input: &'a str) -> IResult<&str, Self> {

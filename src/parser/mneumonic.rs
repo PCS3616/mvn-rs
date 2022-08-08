@@ -24,45 +24,45 @@ pub enum Mneumonic {
 }
 
 impl Mneumonic {
-    pub fn parse(input: &str) -> IResult<&str, Mneumonic> {
+    pub fn parse(input: &str) -> IResult<&str, Self> {
         alt((
-            value(Mneumonic::Jump, tag("JP")),
-            value(Mneumonic::JumpIfZero, tag("JZ")),
-            value(Mneumonic::JumpIfNegative, tag("JN")),
-            value(Mneumonic::LoadValue, tag("LV")),
-            value(Mneumonic::Add, tag("AD")),
-            value(Mneumonic::Subtract, tag("SB")),
-            value(Mneumonic::Multiply, tag("ML")),
-            value(Mneumonic::Divide, tag("DV")),
-            value(Mneumonic::Load, tag("LD")),
-            value(Mneumonic::Memory, tag("MM")),
-            value(Mneumonic::Subroutine, tag("SC")),
-            value(Mneumonic::ReturnFromSubrotine, tag("RS")),
-            value(Mneumonic::HaltMachine, tag("HM")),
-            value(Mneumonic::GetData, tag("GD")),
-            value(Mneumonic::PutData, tag("PD")),
-            value(Mneumonic::OperatingSystem, tag("OS")),
+            value(Self::Jump, tag("JP")),
+            value(Self::JumpIfZero, tag("JZ")),
+            value(Self::JumpIfNegative, tag("JN")),
+            value(Self::LoadValue, tag("LV")),
+            value(Self::Add, tag("AD")),
+            value(Self::Subtract, tag("SB")),
+            value(Self::Multiply, tag("ML")),
+            value(Self::Divide, tag("DV")),
+            value(Self::Load, tag("LD")),
+            value(Self::Memory, tag("MM")),
+            value(Self::Subroutine, tag("SC")),
+            value(Self::ReturnFromSubrotine, tag("RS")),
+            value(Self::HaltMachine, tag("HM")),
+            value(Self::GetData, tag("GD")),
+            value(Self::PutData, tag("PD")),
+            value(Self::OperatingSystem, tag("OS")),
         ))(input)
     }
     
     pub fn value(&self) -> u8 {
         match self {
-            Mneumonic::Jump => 0x0,
-            Mneumonic::JumpIfZero => 0x1,
-            Mneumonic::JumpIfNegative => 0x2,
-            Mneumonic::LoadValue => 0x3,
-            Mneumonic::Add => 0x4,
-            Mneumonic::Subtract => 0x5,
-            Mneumonic::Multiply => 0x6,
-            Mneumonic::Divide => 0x7,
-            Mneumonic::Load => 0x8,
-            Mneumonic::Memory => 0x9,
-            Mneumonic::Subroutine => 0xA,
-            Mneumonic::ReturnFromSubrotine => 0xB,
-            Mneumonic::HaltMachine => 0xC,
-            Mneumonic::GetData => 0xD,
-            Mneumonic::PutData => 0xE,
-            Mneumonic::OperatingSystem => 0xF
+            Self::Jump => 0x0,
+            Self::JumpIfZero => 0x1,
+            Self::JumpIfNegative => 0x2,
+            Self::LoadValue => 0x3,
+            Self::Add => 0x4,
+            Self::Subtract => 0x5,
+            Self::Multiply => 0x6,
+            Self::Divide => 0x7,
+            Self::Load => 0x8,
+            Self::Memory => 0x9,
+            Self::Subroutine => 0xA,
+            Self::ReturnFromSubrotine => 0xB,
+            Self::HaltMachine => 0xC,
+            Self::GetData => 0xD,
+            Self::PutData => 0xE,
+            Self::OperatingSystem => 0xF
         }
     }
 }

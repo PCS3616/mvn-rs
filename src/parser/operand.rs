@@ -14,7 +14,7 @@ pub enum Operand<'a> {
 }
 
 impl<'a> Operand<'a> {
-    pub fn parse(input: &'a str) -> IResult<&str, Operand<'a>> {
+    pub fn parse(input: &'a str) -> IResult<&str, Self> {
         alt((
             // numeric
             map(
@@ -35,11 +35,11 @@ impl<'a> Operand<'a> {
     }
 
     fn new_numeric(value: u16) -> Self {
-        Operand::Numeric(value)
+        Self::Numeric(value)
     }
     
     fn new_simbolic(label: Label<'a>) -> Self {
-        Operand::Simbolic(label)
+        Self::Simbolic(label)
     }
 }
 

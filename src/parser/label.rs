@@ -8,13 +8,13 @@ pub struct Label<'a>(&'a str);
 
 impl<'a> Label<'a> {
     pub fn new(label: &'a str) -> Self {
-        Label(label)
+        Self(label)
     }
 
-    pub fn parse(input: &str) -> IResult<&str, Label> {
+    pub fn parse(input: &str) -> IResult<&str, Self> {
         map(
             identifier,
-            |out: &str| Label::new(out)
+            |out: &str| Self::new(out)
         )(input)
     }
 }
