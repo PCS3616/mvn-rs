@@ -6,7 +6,7 @@ use crate::parser::util::identifier;
 pub struct Label<'a>(&'a str);
 
 impl<'a> Label<'a> {
-    fn new(label: &'a str) -> Self {
+    pub fn new(label: &'a str) -> Self {
         Label(label)
     }
 
