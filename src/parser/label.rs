@@ -11,7 +11,7 @@ impl<'a> Label<'a> {
         Self(label)
     }
 
-    pub fn parse(input: &str) -> IResult<&str, Self> {
+    pub fn parse(input: &'a str) -> IResult<&str, Self> {
         map(
             identifier,
             |out: &str| Self::new(out)
