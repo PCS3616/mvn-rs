@@ -57,27 +57,27 @@ mod tests {
     fn should_parse() {
         assert_eq!(
             Line::parse("JP /0"),
-            Ok(("", Line(None, Operation::new(Mneumonic::Jump, Operand::Numeric(0)))))
+            Ok(("", Line(None, Operation::new(Mneumonic::Jump, Operand::new_numeric(0)))))
         );
         assert_eq!(
             Line::parse("     JP /0"),
-            Ok(("", Line(None, Operation::new(Mneumonic::Jump, Operand::Numeric(0)))))
+            Ok(("", Line(None, Operation::new(Mneumonic::Jump, Operand::new_numeric(0)))))
         );
         assert_eq!(
             Line::parse("LOOP JP /0"),
-            Ok(("", Line(Some(Label::new("LOOP")), Operation::new(Mneumonic::Jump, Operand::Numeric(0)))))
+            Ok(("", Line(Some(Label::new("LOOP")), Operation::new(Mneumonic::Jump, Operand::new_numeric(0)))))
         );
         assert_eq!(
             Line::parse("  LOOP JP /0"),
-            Ok(("", Line(Some(Label::new("LOOP")), Operation::new(Mneumonic::Jump, Operand::Numeric(0)))))
+            Ok(("", Line(Some(Label::new("LOOP")), Operation::new(Mneumonic::Jump, Operand::new_numeric(0)))))
         );
         assert_eq!(
             Line::parse("  LOOP JP /0   "),
-            Ok(("", Line(Some(Label::new("LOOP")), Operation::new(Mneumonic::Jump, Operand::Numeric(0)))))
+            Ok(("", Line(Some(Label::new("LOOP")), Operation::new(Mneumonic::Jump, Operand::new_numeric(0)))))
         );
         assert_eq!(
             Line::parse("  LOOP JP /0# comment"),
-            Ok(("", Line(Some(Label::new("LOOP")), Operation::new(Mneumonic::Jump, Operand::Numeric(0)))))
+            Ok(("", Line(Some(Label::new("LOOP")), Operation::new(Mneumonic::Jump, Operand::new_numeric(0)))))
         );
     }
 }

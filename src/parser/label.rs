@@ -3,7 +3,7 @@ use nom::combinator::map;
 
 use crate::parser::util::identifier;
 
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Debug, PartialEq, Clone, Eq, PartialOrd, Ord)]
 pub struct Label<'a>(&'a str);
 
 impl<'a> Label<'a> {

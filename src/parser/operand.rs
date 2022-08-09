@@ -34,11 +34,11 @@ impl<'a> Operand<'a> {
           ))(input)
     }
 
-    fn new_numeric(value: u16) -> Self {
+    pub fn new_numeric(value: u16) -> Self {
         Self::Numeric(value)
     }
     
-    fn new_simbolic(label: Label<'a>) -> Self {
+    pub fn new_simbolic(label: Label<'a>) -> Self {
         Self::Simbolic(label)
     }
 }
@@ -49,13 +49,13 @@ mod tests {
 
     #[test]
     fn should_parse_numeric() {
-        assert_eq!(Operand::parse("/000F"), Ok(("", Operand::Numeric(15))));
-        assert_eq!(Operand::parse("/F"), Ok(("", Operand::Numeric(15))));
+        assert_eq!(Operand::parse("/000F"), Ok(("", Operand::new_numeric(15))));
+        assert_eq!(Operand::parse("/F"), Ok(("", Operand::new_numeric(15))));
     }
 
     #[test]
     fn should_parse_simbolic() {
-        assert_eq!(Operand::parse("label"), Ok(("", Operand::Simbolic(Label::new("label")))));
+        assert_eq!(Operand::parse("label"), Ok(("", Operand::new_simbolic(Label::new("label")))));
         assert!(Operand::parse("1label").is_err());
     }
 }
