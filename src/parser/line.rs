@@ -18,7 +18,7 @@ impl<'a> Line<'a> {
     pub fn parse(input: &'a str) -> IResult<&str, Self> {
         delimited(
           space0, 
-            alt((
+            alt(( // probabily can be replaced by alt
                 map(
                     separated_pair(Label::parse, space1, Operation::parse),
                     |(label, operation)| Self::new(Some(label), operation)
