@@ -1,3 +1,5 @@
+use std::collections::BTreeMap;
+
 use nom::branch::alt;
 use nom::combinator::map;
 use nom::sequence::preceded;
@@ -41,6 +43,13 @@ impl<'a> Operand<'a> {
     pub fn new_simbolic(label: Label<'a>) -> Self {
         Self::Simbolic(label)
     }
+
+    pub fn value(&self, label_value: &BTreeMap<Label, u16>) -> u16 {
+        match self {
+            Self::Numeric(value) => *value,
+            Self::Simbolic(label) => *label_value.get(label).unwrap()
+        }
+    }
 }
 
 #[cfg(test)]
@@ -57,6 +66,22 @@ mod tests {
     fn should_parse_simbolic() {
         assert_eq!(Operand::parse("label"), Ok(("", Operand::new_simbolic(Label::new("label")))));
         assert!(Operand::parse("1label").is_err());
+    }
+
+    #[test]
+    fn should_return_label_value() {
+        let labels = BTreeMap::from([
+            (Label::new("label"), 13),
+        ]);
+
+        assert_eq!(Operand::new_simbolic(Label::new("label")).value(&labels), 13);
+    }
+
+    #[test]
+    fn should_return_num_value() {
+        let labels = BTreeMap::from([]);
+
+        assert_eq!(Operand::new_numeric(13).value(&labels), 13);
     }
 }
 
