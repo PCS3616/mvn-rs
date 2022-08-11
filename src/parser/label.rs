@@ -1,3 +1,5 @@
+use std::fmt;
+
 use nom::IResult;
 use nom::combinator::map;
 
@@ -16,6 +18,12 @@ impl<'a> Label<'a> {
             identifier,
             |out: &str| Self::new(out)
         )(input)
+    }
+}
+
+impl<'a> fmt::Display for Label<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Label({})", self.0)
     }
 }
 
