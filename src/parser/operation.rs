@@ -22,7 +22,7 @@ impl<'a> Operation<'a> {
         )(input)
     }
 
-    pub fn value<'b>(&self, label_value: &BTreeMap<Label, u16>) -> Result<u16, String> {
+    pub fn value(&self, label_value: &BTreeMap<Label, u16>) -> Result<u16, String> {
         let operand_value = self.operand.value(&label_value)?;
         Ok(combine(self.mneumonic.value(), operand_value))
     }

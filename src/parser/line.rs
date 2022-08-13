@@ -31,6 +31,10 @@ impl<'a> Line<'a> {
           comment_or_space
         )(input)
     }
+
+    pub fn unwrap(self) -> (Option<Label<'a>>, Operation<'a>) {
+        (self.0, self.1)
+    }
 }
 
 
