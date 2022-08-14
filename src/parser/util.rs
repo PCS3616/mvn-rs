@@ -1,10 +1,11 @@
 use nom::bytes::complete::tag;
 use nom::character::complete::{alpha1, alphanumeric1, one_of, char};
 use nom::branch::alt;
-use nom::multi::{many0_count, many1, many0};
+use nom::error::ParseError;
+use nom::multi::{many0_count, many1, many0, separated_list1};
 use nom::sequence::{pair, terminated};
-use nom::combinator::{recognize, map_res};
-use nom::IResult;
+use nom::combinator::{recognize, map_res, map};
+use nom::{IResult, InputLength};
 use num_traits::Num;
 
 /*
@@ -35,6 +36,36 @@ pub fn hexadecimal<T: Num>(input: &str) -> IResult<&str, T> {
     ),
     |out: &str| T::from_str_radix(&str::replace(&out, "_", ""), 16)
   )(input)
+}
+
+/*
+ * if parse with usable return Some(result),
+ * if parse with ignorable, return None
+ */
+pub fn alt_opt<I: Clone, O, O2, E: ParseError<I>>(
+    usable: impl FnMut(I) -> IResult<I, O, E>,
+    ignorable: impl FnMut(I) -> IResult<I, O2, E>,
+) -> impl FnMut(I) -> IResult<I, Option<O>, E> {
+    alt((
+        map(usable, |l| Some(l)),
+        map(ignorable, |_| None), // Linha em branco
+    ))
+}
+
+
+pub fn separated_list1_opt<I: Clone + InputLength, O, O2, O3, E: ParseError<I>>(
+  sep: impl FnMut(I) -> IResult<I, O, E>,
+  usable: impl FnMut(I) -> IResult<I, O2, E>,
+  ignorable: impl FnMut(I) -> IResult<I, O3, E>,
+) -> impl FnMut(I) -> IResult<I, Vec<O2>, E>
+{
+    map(
+        separated_list1(
+            sep,
+            alt_opt(usable, ignorable)
+        ),
+        |ls| ls.into_iter().flatten().collect()
+    )
 }
 
 

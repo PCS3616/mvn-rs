@@ -38,7 +38,7 @@ impl<'a> Line<'a> {
 }
 
 
-fn comment_or_space<'a>(input: &'a str) -> IResult<&'a str, ()> {
+pub fn comment_or_space<'a>(input: &'a str) -> IResult<&'a str, ()> {
     value(
         (), // Output is thrown away.
         pair(
