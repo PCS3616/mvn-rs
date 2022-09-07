@@ -26,24 +26,6 @@ impl<'a> Lines<'a> {
             |lines| Self::new(lines)
         )(input)
     }
-
-    fn unzip(self) -> (Vec<Option<Label<'a>>>, Vec<Operation<'a>>) {
-        self.0.into_iter().map(|l| l.unwrap()).unzip()
-    }
-
-    pub fn value(self) -> Result<Vec<u16>, String> {
-        let (labels, operations) = self.unzip();
-        let labels_map = create_labels_map(labels);
-        operations.into_iter().map(|op| op.value(&labels_map)).collect()
-    }
-}
-     
-fn create_labels_map(label_lines: Vec<Option<Label>>) -> BTreeMap<Label, u16> {
-    label_lines.into_iter()
-        .enumerate()
-        // (usize, Option<Label>) -> Option<(Label, u16)>
-        .flat_map(|(index, opt_label)| opt_label.map(|label| (label, index as u16 * 2)))
-        .collect()
 }
 
 
@@ -83,21 +65,5 @@ mod tests {
              Line::new(None, Operation::new(Mneumonic::Jump, Operand::new_simbolic(Label::new("LOOP")))),
         ]);
         assert_eq!(Lines::parse(input), Ok(("", expected)));
-    }
-
-    #[test]
-    fn should_returns_asm_bin() {
-        let input = Lines(vec![
-             Line::new(None, Operation::new(Mneumonic::Jump, Operand::new_numeric(0))),
-             Line::new(Some(Label::new("LOOP")), Operation::new(Mneumonic::LoadValue, Operand::new_numeric(0))),
-             Line::new(None, Operation::new(Mneumonic::Jump, Operand::new_simbolic(Label::new("LOOP")))),
-        ]);
-
-        let expected = vec![
-            0x0000,
-            0x3000,
-            0x0002
-        ];
-        assert_eq!(input.value(), Ok(expected));
     }
 }

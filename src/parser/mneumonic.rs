@@ -26,25 +26,46 @@ pub enum Mneumonic {
 impl Mneumonic {
     pub fn parse(input: &str) -> IResult<&str, Self> {
         alt((
-            value(Self::Jump, tag("JP")),
-            value(Self::JumpIfZero, tag("JZ")),
-            value(Self::JumpIfNegative, tag("JN")),
-            value(Self::LoadValue, tag("LV")),
-            value(Self::Add, tag("AD")),
-            value(Self::Subtract, tag("SB")),
-            value(Self::Multiply, tag("ML")),
-            value(Self::Divide, tag("DV")),
-            value(Self::Load, tag("LD")),
-            value(Self::Memory, tag("MM")),
-            value(Self::Subroutine, tag("SC")),
-            value(Self::ReturnFromSubrotine, tag("RS")),
-            value(Self::HaltMachine, tag("HM")),
-            value(Self::GetData, tag("GD")),
-            value(Self::PutData, tag("PD")),
-            value(Self::OperatingSystem, tag("OS")),
+            value(Self::Jump, tag(Self::Jump.to_str())),
+            value(Self::JumpIfZero, tag(Self::JumpIfZero.to_str())),
+            value(Self::JumpIfNegative, tag(Self::JumpIfNegative.to_str())),
+            value(Self::LoadValue, tag(Self::LoadValue.to_str())),
+            value(Self::Add, tag(Self::Add.to_str())),
+            value(Self::Subtract, tag(Self::Subtract.to_str())),
+            value(Self::Multiply, tag(Self::Multiply.to_str())),
+            value(Self::Divide, tag(Self::Divide.to_str())),
+            value(Self::Load, tag(Self::Load.to_str())),
+            value(Self::Memory, tag(Self::Memory.to_str())),
+            value(Self::Subroutine, tag(Self::Subroutine.to_str())),
+            value(Self::ReturnFromSubrotine, tag(Self::ReturnFromSubrotine.to_str())),
+            value(Self::HaltMachine, tag(Self::HaltMachine.to_str())),
+            value(Self::GetData, tag(Self::GetData.to_str())),
+            value(Self::PutData, tag(Self::PutData.to_str())),
+            value(Self::OperatingSystem, tag(Self::OperatingSystem.to_str())),
         ))(input)
     }
     
+    pub fn to_str(&self) -> &str {
+        match self {
+            Self::Jump => "JP",
+            Self::JumpIfZero => "JZ",
+            Self::JumpIfNegative => "JN",
+            Self::LoadValue => "LV",
+            Self::Add => "AD",
+            Self::Subtract => "SB",
+            Self::Multiply => "ML",
+            Self::Divide => "DV",
+            Self::Load => "LD",
+            Self::Memory => "MM",
+            Self::Subroutine => "SC",
+            Self::ReturnFromSubrotine => "RS",
+            Self::HaltMachine => "HM",
+            Self::GetData => "GD",
+            Self::PutData => "PD",
+            Self::OperatingSystem => "OS"
+        }
+    }
+
     pub fn value(&self) -> u8 {
         match self {
             Self::Jump => 0x0,
