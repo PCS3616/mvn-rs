@@ -61,7 +61,7 @@ pub fn separated_list1_opt<I: Clone + InputLength, O, O2, O3, E: ParseError<I>>(
 {
     map(
         separated_list1(
-            sep,
+            many1(sep),
             alt_opt(usable, ignorable)
         ),
         |ls| ls.into_iter().flatten().collect()
