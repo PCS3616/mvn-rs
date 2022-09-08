@@ -1,12 +1,10 @@
-use std::collections::BTreeMap;
-
 use nom::IResult;
 use nom::combinator::map;
 use nom::character::complete::line_ending;
 
 use crate::parser::line::Line;
 
-use super::{label::Label, operation::Operation, line::comment_or_space, util::separated_list1_opt};
+use super::{line::comment_or_space, util::separated_list1_opt};
 
 #[derive(Debug, PartialEq)]
 pub struct Lines<'a>(Vec<Line<'a>>);
@@ -32,7 +30,7 @@ impl<'a> Lines<'a> {
 #[cfg(test)]
 mod tests {
     use indoc::indoc;
-    use crate::parser::{operand::Operand, mneumonic::Mneumonic, operation::Operation, label::Label};
+    use crate::parser::{operand::Operand, mneumonic::Mneumonic, operation::Operation, label::Label, intruction::Instruction};
 
     use super::*;
 
@@ -44,8 +42,8 @@ mod tests {
                     JP LOOP
         "};
         let expected = Lines(vec![
-             Line::new(Some(Label::new("LOOP")), Operation::new(Mneumonic::LoadValue, Operand::new_numeric(0))),
-             Line::new(None, Operation::new(Mneumonic::Jump, Operand::new_simbolic(Label::new("LOOP")))),
+             Line::new(Some(Label::new("LOOP")), Operation::new(Instruction::Real(Mneumonic::LoadValue), Operand::new_numeric(0))),
+             Line::new(None, Operation::new(Instruction::Real(Mneumonic::Jump), Operand::new_simbolic(Label::new("LOOP")))),
         ]);
         assert_eq!(Lines::parse(input), Ok(("", expected)));
     }
@@ -56,13 +54,13 @@ mod tests {
 
             LOOP    LV  /0
 
-            # End loop
+            -- End loop
                     JP LOOP
 
         "};
         let expected = Lines(vec![
-             Line::new(Some(Label::new("LOOP")), Operation::new(Mneumonic::LoadValue, Operand::new_numeric(0))),
-             Line::new(None, Operation::new(Mneumonic::Jump, Operand::new_simbolic(Label::new("LOOP")))),
+             Line::new(Some(Label::new("LOOP")), Operation::new(Instruction::Real(Mneumonic::LoadValue), Operand::new_numeric(0))),
+             Line::new(None, Operation::new(Instruction::Real(Mneumonic::Jump), Operand::new_simbolic(Label::new("LOOP")))),
         ]);
         assert_eq!(Lines::parse(input), Ok(("", expected)));
     }

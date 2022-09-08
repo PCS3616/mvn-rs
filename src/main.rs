@@ -9,7 +9,6 @@ fn main() -> io::Result<()> {
 
     let (_, lines) = Lines::parse(&input).unwrap();
 
-    let binnary = generate_bin_str(&input);
-    print!("{:?}", binnary);
+    print!("{:?}", lines);
     Ok(())
 }

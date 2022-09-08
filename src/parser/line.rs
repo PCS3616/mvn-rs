@@ -44,7 +44,7 @@ pub fn comment_or_space<'a>(input: &'a str) -> IResult<&'a str, ()> {
         pair(
             space0,
             opt(
-                pair(char('#'), not_line_ending)
+                pair(char('-'), not_line_ending)
             )
         )
     )(input)
@@ -53,7 +53,7 @@ pub fn comment_or_space<'a>(input: &'a str) -> IResult<&'a str, ()> {
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::{mneumonic::Mneumonic, operand::Operand, operation::Operation};
+    use crate::parser::{mneumonic::Mneumonic, operand::Operand, operation::Operation, intruction::Instruction};
 
     use super::*;
 
@@ -61,27 +61,27 @@ mod tests {
     fn should_parse() {
         assert_eq!(
             Line::parse("JP /0"),
-            Ok(("", Line(None, Operation::new(Mneumonic::Jump, Operand::new_numeric(0)))))
+            Ok(("", Line(None, Operation::new(Instruction::Real(Mneumonic::Jump), Operand::new_numeric(0)))))
         );
         assert_eq!(
             Line::parse("     JP /0"),
-            Ok(("", Line(None, Operation::new(Mneumonic::Jump, Operand::new_numeric(0)))))
+            Ok(("", Line(None, Operation::new(Instruction::Real(Mneumonic::Jump), Operand::new_numeric(0)))))
         );
         assert_eq!(
             Line::parse("LOOP JP /0"),
-            Ok(("", Line(Some(Label::new("LOOP")), Operation::new(Mneumonic::Jump, Operand::new_numeric(0)))))
+            Ok(("", Line(Some(Label::new("LOOP")), Operation::new(Instruction::Real(Mneumonic::Jump), Operand::new_numeric(0)))))
         );
         assert_eq!(
             Line::parse("  LOOP JP /0"),
-            Ok(("", Line(Some(Label::new("LOOP")), Operation::new(Mneumonic::Jump, Operand::new_numeric(0)))))
+            Ok(("", Line(Some(Label::new("LOOP")), Operation::new(Instruction::Real(Mneumonic::Jump), Operand::new_numeric(0)))))
         );
         assert_eq!(
             Line::parse("  LOOP JP /0   "),
-            Ok(("", Line(Some(Label::new("LOOP")), Operation::new(Mneumonic::Jump, Operand::new_numeric(0)))))
+            Ok(("", Line(Some(Label::new("LOOP")), Operation::new(Instruction::Real(Mneumonic::Jump), Operand::new_numeric(0)))))
         );
         assert_eq!(
-            Line::parse("  LOOP JP /0# comment"),
-            Ok(("", Line(Some(Label::new("LOOP")), Operation::new(Mneumonic::Jump, Operand::new_numeric(0)))))
+            Line::parse("  LOOP JP /0-- comment"),
+            Ok(("", Line(Some(Label::new("LOOP")), Operation::new(Instruction::Real(Mneumonic::Jump), Operand::new_numeric(0)))))
         );
     }
 }
