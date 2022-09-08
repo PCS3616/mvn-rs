@@ -31,6 +31,7 @@ impl<'a> Lines<'a> {
 mod tests {
     use indoc::indoc;
     use crate::parser::{operand::Operand, mneumonic::Mneumonic, operation::Operation, label::Label, intruction::Instruction};
+    use pretty_assertions::assert_eq;
 
     use super::*;
 

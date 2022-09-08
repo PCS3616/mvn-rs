@@ -24,6 +24,7 @@ impl<'a> Operation<'a> {
 #[cfg(test)]
 mod tests {
     use crate::parser::{label::Label, mneumonic::Mneumonic, pseudo_instruction::PseudoInstruction};
+    use pretty_assertions::assert_eq;
 
     use super::*;
 

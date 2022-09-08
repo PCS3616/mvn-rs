@@ -54,6 +54,7 @@ pub fn comment_or_space<'a>(input: &'a str) -> IResult<&'a str, ()> {
 #[cfg(test)]
 mod tests {
     use crate::parser::{mneumonic::Mneumonic, operand::Operand, operation::Operation, intruction::Instruction};
+    use pretty_assertions::assert_eq;
 
     use super::*;
 

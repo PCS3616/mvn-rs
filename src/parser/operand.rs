@@ -37,6 +37,7 @@ impl<'a> Operand<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use pretty_assertions::assert_eq;
 
     #[test]
     fn should_parse_numeric() {

@@ -72,6 +72,7 @@ pub fn separated_list1_opt<I: Clone + InputLength, O, O2, O3, E: ParseError<I>>(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use pretty_assertions::assert_eq;
 
     #[test]
     fn should_parse_hexa() {
