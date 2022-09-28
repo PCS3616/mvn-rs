@@ -2,9 +2,13 @@ use nom::IResult;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::combinator::value;
+use dotenv_codegen::dotenv;
+
+use super::util::hexadecimal;
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub enum Mneumonic {
+    // Instructions
     Jump,
     JumpIfZero,
     JumpIfNegative,
@@ -20,72 +24,70 @@ pub enum Mneumonic {
     HaltMachine,
     GetData,
     PutData,
-    OperatingSystem
+    OperatingSystem,
+    // Pseudo-instructions
+    SetConstant,
+    SetEnd,
+    ReserveMemory,
+    SetAbsoluteOrigin,
+    SetRelocatableOrigin,
+    // Relations
+    Import,
+    Export,
 }
 
 impl Mneumonic {
     pub fn parse(input: &str) -> IResult<&str, Self> {
         alt((
-            value(Self::Jump, tag(Self::Jump.to_str())),
-            value(Self::JumpIfZero, tag(Self::JumpIfZero.to_str())),
-            value(Self::JumpIfNegative, tag(Self::JumpIfNegative.to_str())),
-            value(Self::LoadValue, tag(Self::LoadValue.to_str())),
-            value(Self::Add, tag(Self::Add.to_str())),
-            value(Self::Subtract, tag(Self::Subtract.to_str())),
-            value(Self::Multiply, tag(Self::Multiply.to_str())),
-            value(Self::Divide, tag(Self::Divide.to_str())),
-            value(Self::Load, tag(Self::Load.to_str())),
-            value(Self::Memory, tag(Self::Memory.to_str())),
-            value(Self::Subroutine, tag(Self::Subroutine.to_str())),
-            value(Self::ReturnFromSubrotine, tag(Self::ReturnFromSubrotine.to_str())),
-            value(Self::HaltMachine, tag(Self::HaltMachine.to_str())),
-            value(Self::GetData, tag(Self::GetData.to_str())),
-            value(Self::PutData, tag(Self::PutData.to_str())),
-            value(Self::OperatingSystem, tag(Self::OperatingSystem.to_str())),
+            value(Self::Jump,                   tag(dotenv!("MNEUMONIC_JUMP"))),
+            value(Self::JumpIfZero,             tag(dotenv!("MNEUMONIC_JUMP_IF_ZERO"))),
+            value(Self::JumpIfNegative,         tag(dotenv!("MNEUMONIC_JUMP_IF_NEGATIVE"))),
+            value(Self::LoadValue,              tag(dotenv!("MNEUMONIC_LOAD_VALUE"))),
+            value(Self::Add,                    tag(dotenv!("MNEUMONIC_ADD"))),
+            value(Self::Subtract,               tag(dotenv!("MNEUMONIC_SUBTRACT"))),
+            value(Self::Multiply,               tag(dotenv!("MNEUMONIC_MULTIPLY"))),
+            value(Self::Divide,                 tag(dotenv!("MNEUMONIC_DIVIDE"))),
+            value(Self::Load,                   tag(dotenv!("MNEUMONIC_LOAD"))),
+            value(Self::Memory,                 tag(dotenv!("MNEUMONIC_MEMORY"))),
+            value(Self::Subroutine,             tag(dotenv!("MNEUMONIC_SUBROUTINE"))),
+            value(Self::ReturnFromSubrotine,    tag(dotenv!("MNEUMONIC_RETURN_FROM_SUBROTINE"))),
+            value(Self::HaltMachine,            tag(dotenv!("MNEUMONIC_HALT_MACHINE"))),
+            value(Self::GetData,                tag(dotenv!("MNEUMONIC_GET_DATA"))),
+            value(Self::PutData,                tag(dotenv!("MNEUMONIC_PUT_DATA"))),
+            value(Self::OperatingSystem,        tag(dotenv!("MNEUMONIC_OPERATING_SYSTEM"))),
+            value(Self::SetConstant,            tag(dotenv!("MNEUMONIC_SET_CONSTANT"))),
+            value(Self::SetEnd,                 tag(dotenv!("MNEUMONIC_SET_END"))),
+            value(Self::ReserveMemory,          tag(dotenv!("MNEUMONIC_RESERVE_MEMORY"))),
+            value(Self::SetAbsoluteOrigin,      tag(dotenv!("MNEUMONIC_SET_ABSOLUTE_ORIGIN"))),
+            value(Self::SetRelocatableOrigin,   tag(dotenv!("MNEUMONIC_SET_RELOCATABLE_ORIGIN"))),
+            // TODO Discover why adding these optag(dotenv!("MNEUMONIC_IMPORT"))),tions causes an erro
+            // value(Self::Import, tag("<"))    tag(dotenv!("MNEUMONIC_EXPORT"))),
+            // value(Self::Export, tag(">")),
         ))(input)
-    }
-    
-    pub fn to_str(&self) -> &str {
-        match self {
-            Self::Jump => "JP",
-            Self::JumpIfZero => "JZ",
-            Self::JumpIfNegative => "JN",
-            Self::LoadValue => "LV",
-            Self::Add => "AD",
-            Self::Subtract => "SB",
-            Self::Multiply => "ML",
-            Self::Divide => "DV",
-            Self::Load => "LD",
-            Self::Memory => "MM",
-            Self::Subroutine => "SC",
-            Self::ReturnFromSubrotine => "RS",
-            Self::HaltMachine => "HM",
-            Self::GetData => "GD",
-            Self::PutData => "PD",
-            Self::OperatingSystem => "OS"
-        }
     }
 
     pub fn value(&self) -> u8 {
         match self {
-            Self::Jump => 0x0,
-            Self::JumpIfZero => 0x1,
-            Self::JumpIfNegative => 0x2,
-            Self::LoadValue => 0x3,
-            Self::Add => 0x4,
-            Self::Subtract => 0x5,
-            Self::Multiply => 0x6,
-            Self::Divide => 0x7,
-            Self::Load => 0x8,
-            Self::Memory => 0x9,
-            Self::Subroutine => 0xA,
-            Self::ReturnFromSubrotine => 0xB,
-            Self::HaltMachine => 0xC,
-            Self::GetData => 0xD,
-            Self::PutData => 0xE,
-            Self::OperatingSystem => 0xF
+            Self::Jump                  => hexadecimal(dotenv!("VALUE_JUMP")).unwrap().1,
+            Self::JumpIfZero            => hexadecimal(dotenv!("VALUE_JUMP_IF_ZERO")).unwrap().1,
+            Self::JumpIfNegative        => hexadecimal(dotenv!("VALUE_JUMP_IF_NEGATIVE")).unwrap().1,
+            Self::LoadValue             => hexadecimal(dotenv!("VALUE_LOAD_VALUE")).unwrap().1,
+            Self::Add                   => hexadecimal(dotenv!("VALUE_ADD")).unwrap().1,
+            Self::Subtract              => hexadecimal(dotenv!("VALUE_SUBTRACT")).unwrap().1,
+            Self::Multiply              => hexadecimal(dotenv!("VALUE_MULTIPLY")).unwrap().1,
+            Self::Divide                => hexadecimal(dotenv!("VALUE_DIVIDE")).unwrap().1,
+            Self::Load                  => hexadecimal(dotenv!("VALUE_LOAD")).unwrap().1,
+            Self::Memory                => hexadecimal(dotenv!("VALUE_MEMORY")).unwrap().1,
+            Self::Subroutine            => hexadecimal(dotenv!("VALUE_SUBROUTINE")).unwrap().1,
+            Self::ReturnFromSubrotine   => hexadecimal(dotenv!("VALUE_RETURN_FROM_SUBROTINE")).unwrap().1,
+            Self::HaltMachine           => hexadecimal(dotenv!("VALUE_HALT_MACHINE")).unwrap().1,
+            Self::GetData               => hexadecimal(dotenv!("VALUE_GET_DATA")).unwrap().1,
+            Self::PutData               => hexadecimal(dotenv!("VALUE_PUT_DATA")).unwrap().1,
+            Self::OperatingSystem       => hexadecimal(dotenv!("VALUE_OPERATING_SYSTEM")).unwrap().1,
+            _ => 0x0
         }
     }
+
 }
 
 #[cfg(test)]
