@@ -88,6 +88,34 @@ impl Mneumonic {
         }
     }
 
+    pub fn to_str(&self) -> &str {
+        match self {
+            Self::Jump                  => dotenv!("MNEUMONIC_JUMP"),
+            Self::JumpIfZero            => dotenv!("MNEUMONIC_JUMP_IF_ZERO"),
+            Self::JumpIfNegative        => dotenv!("MNEUMONIC_JUMP_IF_NEGATIVE"),
+            Self::LoadValue             => dotenv!("MNEUMONIC_LOAD_VALUE"),
+            Self::Add                   => dotenv!("MNEUMONIC_ADD"),
+            Self::Subtract              => dotenv!("MNEUMONIC_SUBTRACT"),
+            Self::Multiply              => dotenv!("MNEUMONIC_MULTIPLY"),
+            Self::Divide                => dotenv!("MNEUMONIC_DIVIDE"),
+            Self::Load                  => dotenv!("MNEUMONIC_LOAD"),
+            Self::Memory                => dotenv!("MNEUMONIC_MEMORY"),
+            Self::Subroutine            => dotenv!("MNEUMONIC_SUBROUTINE"),
+            Self::ReturnFromSubrotine   => dotenv!("MNEUMONIC_RETURN_FROM_SUBROTINE"),
+            Self::HaltMachine           => dotenv!("MNEUMONIC_HALT_MACHINE"),
+            Self::GetData               => dotenv!("MNEUMONIC_GET_DATA"),
+            Self::PutData               => dotenv!("MNEUMONIC_PUT_DATA"),
+            Self::OperatingSystem       => dotenv!("MNEUMONIC_OPERATING_SYSTEM"),
+            Self::SetConstant           => dotenv!("MNEUMONIC_SET_CONSTANT"),
+            Self::SetEnd                => dotenv!("MNEUMONIC_SET_END"),
+            Self::ReserveMemory         => dotenv!("MNEUMONIC_RESERVE_MEMORY"),
+            Self::SetAbsoluteOrigin     => dotenv!("MNEUMONIC_SET_ABSOLUTE_ORIGIN"),
+            Self::SetRelocatableOrigin  => dotenv!("MNEUMONIC_SET_RELOCATABLE_ORIGIN"),
+            Self::Import                => dotenv!("MNEUMONIC_IMPORT"),
+            Self::Export                => dotenv!("MNEUMONIC_IMPORT"),
+        }
+    }
+
 }
 
     pub fn is_normal(mneumonic: &Mneumonic) -> bool {
