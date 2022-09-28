@@ -90,13 +90,50 @@ impl Mneumonic {
 
 }
 
+    pub fn is_normal(mneumonic: &Mneumonic) -> bool {
+        [
+            Mneumonic::Jump,
+            Mneumonic::JumpIfZero,
+            Mneumonic::JumpIfNegative,
+            Mneumonic::LoadValue,
+            Mneumonic::Add,
+            Mneumonic::Subtract,
+            Mneumonic::Multiply,
+            Mneumonic::Divide,
+            Mneumonic::Load,
+            Mneumonic::Memory,
+            Mneumonic::Subroutine,
+            Mneumonic::ReturnFromSubrotine,
+            Mneumonic::HaltMachine,
+            Mneumonic::GetData,
+            Mneumonic::PutData,
+            Mneumonic::OperatingSystem,
+            Mneumonic::SetConstant
+        ].contains(mneumonic)
+    }
+
+    pub fn is_positional(mneumonic: &Mneumonic) -> bool {
+        [
+            Mneumonic::ReserveMemory,
+            Mneumonic::SetAbsoluteOrigin,
+            Mneumonic::SetRelocatableOrigin
+        ].contains(mneumonic)
+    }
+
+    pub fn is_relational(mneumonic: &Mneumonic) -> bool {
+        [
+            Mneumonic::Import,
+            Mneumonic::Export
+        ].contains(mneumonic)
+    }
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use pretty_assertions::assert_eq;
 
     #[test]
-    fn should_parse_mneumonic() {
+    fn should_parse_instruction_mneumonic() {
         assert_eq!(Mneumonic::parse("JP"), Ok(("", Mneumonic::Jump)));
         assert_eq!(Mneumonic::parse("JZ"), Ok(("",  Mneumonic::JumpIfZero)));
         assert_eq!(Mneumonic::parse("JN"), Ok(("",  Mneumonic::JumpIfNegative)));
@@ -113,6 +150,17 @@ mod tests {
         assert_eq!(Mneumonic::parse("GD"), Ok(("",  Mneumonic::GetData)));
         assert_eq!(Mneumonic::parse("PD"), Ok(("",  Mneumonic::PutData)));
         assert_eq!(Mneumonic::parse("OS"), Ok(("",  Mneumonic::OperatingSystem)));
+    }
+
+    #[test]
+    fn should_parse_pseudo_instruction_mneumonic(){
+        assert_eq!(Mneumonic::parse("K"), Ok(("", Mneumonic::SetConstant)));
+        assert_eq!(Mneumonic::parse("#"), Ok(("", Mneumonic::SetEnd)));
+        assert_eq!(Mneumonic::parse("$"), Ok(("", Mneumonic::ReserveMemory)));
+        assert_eq!(Mneumonic::parse("@"), Ok(("", Mneumonic::SetAbsoluteOrigin)));
+        assert_eq!(Mneumonic::parse("&"), Ok(("", Mneumonic::SetRelocatableOrigin)));
+        // assert_eq!(Mneumonic::parse(">"), Ok(("", Mneumonic::Export)));
+        // assert_eq!(Mneumonic::parse("<"), Ok(("", Mneumonic::Import)));
     }
 
     #[test]
@@ -134,5 +182,60 @@ mod tests {
             assert_eq!(Mneumonic::PutData.value(), 0xE);
             assert_eq!(Mneumonic::OperatingSystem.value(), 0xF);
     }
-}
 
+    #[test]
+    fn should_detect_normal_mneumonics(){
+        for mneumonic in [
+            Mneumonic::Jump,
+            Mneumonic::JumpIfZero,
+            Mneumonic::JumpIfNegative,
+            Mneumonic::LoadValue,
+            Mneumonic::Add,
+            Mneumonic::Subtract,
+            Mneumonic::Multiply,
+            Mneumonic::Divide,
+            Mneumonic::Load,
+            Mneumonic::Memory,
+            Mneumonic::Subroutine,
+            Mneumonic::ReturnFromSubrotine,
+            Mneumonic::HaltMachine,
+            Mneumonic::GetData,
+            Mneumonic::PutData,
+            Mneumonic::OperatingSystem,
+            Mneumonic::SetConstant,
+        ] {
+            assert_eq!(is_normal(&mneumonic), true);
+            assert_eq!(is_positional(&mneumonic), false);
+            assert_eq!(is_relational(&mneumonic), false);
+        }
+
+    }
+
+    #[test]
+    fn should_detect_positional_mneumonics(){
+        for mneumonic in [
+            Mneumonic::ReserveMemory,
+            Mneumonic::SetAbsoluteOrigin,
+            Mneumonic::SetRelocatableOrigin
+        ] {
+            assert_eq!(is_normal(&mneumonic), false);
+            assert_eq!(is_positional(&mneumonic), true);
+            assert_eq!(is_relational(&mneumonic), false);
+        }
+
+    }
+
+    #[test]
+    fn should_detect_relational_mneumonics(){
+        for mneumonic in [
+            Mneumonic::Import,
+            Mneumonic::Export,
+        ] {
+            assert_eq!(is_normal(&mneumonic), false);
+            assert_eq!(is_positional(&mneumonic), false);
+            assert_eq!(is_relational(&mneumonic), true);
+        }
+
+    }
+
+}
