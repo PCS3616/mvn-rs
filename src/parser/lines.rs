@@ -7,7 +7,9 @@ use crate::parser::line::Line;
 use super::{line::comment_or_space, util::separated_list1_opt};
 
 #[derive(Debug, PartialEq)]
-pub struct Lines<'a>(Vec<Line<'a>>);
+pub struct Lines<'a>(
+    pub Vec<Line<'a>>
+);
 
 impl<'a> Lines<'a> {
     pub fn new(lines: Vec<Line<'a>>) -> Self {

@@ -6,7 +6,9 @@ use nom::combinator::map;
 use crate::parser::util::identifier;
 
 #[derive(Debug, PartialEq, Clone, Eq, PartialOrd, Ord)]
-pub struct Label<'a>(&'a str);
+pub struct Label<'a>(
+    pub &'a str
+);
 
 impl<'a> Label<'a> {
     pub fn new(label: &'a str) -> Self {
