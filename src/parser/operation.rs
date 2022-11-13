@@ -4,8 +4,8 @@ use super::{operand::Operand, intruction::Instruction};
 
 #[derive(Debug, PartialEq)]
 pub struct Operation<'a>{
-    mneumonic: Instruction,
-    operand: Operand<'a>
+    pub instruction: Instruction,
+    pub operand: Operand<'a>
 }
 
 impl<'a> Operation<'a> {

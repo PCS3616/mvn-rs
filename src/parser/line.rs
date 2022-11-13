@@ -8,7 +8,10 @@ use super::label::Label;
 use super::operation::Operation;
 
 #[derive(Debug, PartialEq)]
-pub struct Line<'a>(Option<Label<'a>>, Operation<'a>);
+pub struct Line<'a>(
+    pub Option<Label<'a>>,
+    pub Operation<'a>
+);
 
 impl<'a> Line<'a> {
     pub fn new(label: Option<Label<'a>>, operation: Operation<'a>) -> Self {
