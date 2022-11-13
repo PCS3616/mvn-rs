@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 
 use crate::parser::{lines::Lines, line::Line, label::Label, instruction::Instruction, mneumonic::{PositionalMneumonic, RelationalMneumonic}, operation::Operation, operand::Operand};
 
-#[derive(Debug, PartialEq, Default)]
+#[derive(Clone, Debug, PartialEq, Default)]
 pub struct Address {
     pub position: u16,
     pub relocatable: bool,
@@ -17,9 +17,11 @@ pub struct AddressedLine<'a> {
 }
 
 #[derive(Debug, PartialEq)]
-pub struct AddressedLines<'a>(Vec<AddressedLine<'a>>);
+pub struct AddressedLines<'a>(
+    pub Vec<AddressedLine<'a>>
+);
+pub type LabelMap<'a> = BTreeMap<Label<'a>, Address>;
 
-type LabelMap<'a> = BTreeMap<Label<'a>, &'a Address>;
 impl<'a> AddressedLines<'a> {
 
     pub fn parse(program: Lines<'a>) -> AddressedLines<'a> {
@@ -90,14 +92,14 @@ impl<'a> AddressedLines<'a> {
     }
 
     pub fn map_labels(&'a self) -> LabelMap<'a> {
-        let mut label_vector: Vec<(Label, &Address)> = Vec::new();
+        let mut label_vector: Vec<(Label, Address)> = Vec::new();
         for AddressedLine { address, line } in &self.0 {
             if let Some(label) = &line.0 {
-                label_vector.push((label.clone(), address));
+                label_vector.push((label.clone(), address.clone()));
             } else if let Instruction::Relational(mneumonic) = &line.1.instruction {
                 if let RelationalMneumonic::Import = mneumonic {
                     if let Operand::Simbolic(label) = &line.1.operand {
-                        label_vector.push((label.clone(), address));
+                        label_vector.push((label.clone(), address.clone()));
                     }
                 }
             }
@@ -223,19 +225,12 @@ mod tests {
                 # THEEND
             "}).unwrap().1
         );
-        let expected_addresses = [
-            Address {position: 0x0, ..Default::default()},
-            Address {position: 0x2, ..Default::default()},
-            Address {position: 0x100, relocatable: false, ..Default::default()},
-            Address {position: 0x112, relocatable: false, ..Default::default()},
-            Address {position: 0x200, relocatable: true, ..Default::default()},
-        ];
         let expected = LabelMap::from([
-            (Label("TEST00"), &expected_addresses[0]),
-            (Label("TEST01"), &expected_addresses[1]),
-            (Label("TEST10"), &expected_addresses[2]),
-            (Label("TEST11"), &expected_addresses[3]),
-            (Label("TEST20"), &expected_addresses[4]),
+            (Label("TEST00"), Address {position: 0x0, ..Default::default()}),
+            (Label("TEST01"), Address {position: 0x2, ..Default::default()}),
+            (Label("TEST10"), Address {position: 0x100, relocatable: false, ..Default::default()}),
+            (Label("TEST11"), Address {position: 0x112, relocatable: false, ..Default::default()}),
+            (Label("TEST20"), Address {position: 0x200, relocatable: true, ..Default::default()}),
         ]);
         assert_eq!(input.map_labels(), expected);
     }
@@ -253,19 +248,12 @@ mod tests {
                 EXPORT1 JP /0
             "}).unwrap().1
         );
-        let expected_addresses = [
-            Address {position: 0x0, imported: true, ..Default::default()},
-            Address {position: 0x1, imported: true, ..Default::default()},
-            Address {position: 0x0, ..Default::default()},
-            Address {position: 0x2, ..Default::default()},
-            Address {position: 0x4, ..Default::default()},
-        ];
         let expected = LabelMap::from([
-            (Label("IMPORT0"), &expected_addresses[0]),
-            (Label("IMPORT1"), &expected_addresses[1]),
-            (Label("NORMAL"), &expected_addresses[2]),
-            (Label("EXPORT0"), &expected_addresses[3]),
-            (Label("EXPORT1"), &expected_addresses[4]),
+            (Label("IMPORT0"), Address {position: 0x0, imported: true, ..Default::default()}),
+            (Label("IMPORT1"), Address {position: 0x1, imported: true, ..Default::default()}),
+            (Label("NORMAL"), Address {position: 0x0, ..Default::default()}),
+            (Label("EXPORT0"), Address {position: 0x2, ..Default::default()}),
+            (Label("EXPORT1"), Address {position: 0x4, ..Default::default()}),
         ]);
         assert_eq!(input.map_labels(), expected);
     }
