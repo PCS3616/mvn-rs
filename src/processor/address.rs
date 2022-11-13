@@ -121,7 +121,7 @@ mod tests {
         let input = Lines::parse(indoc! {"
             JP /0
             K /FFFF
-            -- Test if comments are ignored
+            ; Test if comments are ignored
             AD /0001
         "}).unwrap().1;
         let expected = AddressedLines(vec![
@@ -136,12 +136,12 @@ mod tests {
     fn should_resolve_imported_and_exported_addresses() {
         let input = Lines::parse(indoc! {"
             > EXPORTED
-            -- Position for imported symbols reflects the order they
-            -- were imported in, starting from 0
+            ; Position for imported symbols reflects the order they
+            ; were imported in, starting from 0
             < IMPORTED1
             < IMPORTED2
             < IMPORTED3
-            -- Test if value is neither imported nor exported
+            ; Test if value is neither imported nor exported
             JP /0
         "}).unwrap().1;
         let expected = AddressedLines(vec![
@@ -174,9 +174,9 @@ mod tests {
     fn should_resolve_relocatable_addresses() {
         let input = Lines::parse(indoc! {"
             JP /0
-            & /100 -- Instructions after this should be relocatable
+            & /100 ; Instructions after this should be relocatable
             AD /001
-            @ /010 -- Instructions after this should NOT be relocatable
+            @ /010 ; Instructions after this should NOT be relocatable
             JP /0
         "}).unwrap().1;
         let expected = AddressedLines(vec![

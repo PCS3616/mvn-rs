@@ -47,7 +47,7 @@ pub fn comment_or_space<'a>(input: &'a str) -> IResult<&'a str, ()> {
         pair(
             space0,
             opt(
-                pair(char('-'), not_line_ending)
+                pair(char(';'), not_line_ending)
             )
         )
     )(input)
@@ -84,7 +84,7 @@ mod tests {
             Ok(("", Line(Some(Label::new("LOOP")), Operation::new(Instruction::Normal(NormalMneumonic::Jump), Operand::new_numeric(0)))))
         );
         assert_eq!(
-            Line::parse("  LOOP JP /0-- comment"),
+            Line::parse("  LOOP JP /0; comment"),
             Ok(("", Line(Some(Label::new("LOOP")), Operation::new(Instruction::Normal(NormalMneumonic::Jump), Operand::new_numeric(0)))))
         );
     }
