@@ -24,52 +24,23 @@ impl<'a> AddressedLines<'a> {
 
     pub fn parse(program: Lines<'a>) -> AddressedLines<'a> {
         let mut position: u16 = 0;
+        let mut import_counter: u16 = 0;
         let mut addresses: Vec<Address> = Vec::new();
         let mut relocatable = false;
 
         for line in &program.0 {
-
-            let mut imported = false;
-            let mut exported = false;
-
             let Operation { instruction, operand } = &line.1;
+            let address_position: u16 = if let Instruction::Relational(mneumonic) = instruction {
+                if let RelationalMneumonic::Import = mneumonic {
+                    import_counter += 1;
+                    import_counter-1
+                } else { position }
+            } else { position };
 
-            // Resolve nibble
-            match instruction {
-                Instruction::Normal(_) => (),
-                Instruction::Positional(mneumonic) => match mneumonic {
-                    PositionalMneumonic::SetAbsoluteOrigin => relocatable = false,
-                    PositionalMneumonic::SetRelocatableOrigin => relocatable = true,
-                    _ => (),
-                },
-                Instruction::Relational(mneumonic) => match mneumonic {
-                    RelationalMneumonic::Export => exported = true,
-                    RelationalMneumonic::Import => imported = true,
-                },
-            }
-
-            addresses.push(Address {
-                position,
-                relocatable,
-                imported,
-                exported,
-            });
-
-            // Resolve next position
-            match instruction {
-                Instruction::Normal(_) => position += 2,
-                Instruction::Positional(mneumonic) => {
-                    if let Operand::Numeric(operand) = operand {
-                        let operand = *operand;
-                        match mneumonic {
-                            PositionalMneumonic::ReserveMemory => position += operand,
-                            PositionalMneumonic::SetAbsoluteOrigin | PositionalMneumonic::SetRelocatableOrigin => position = operand,
-                            _ => (),
-                        }
-                    }
-                },
-                _ => (),
-            }
+            let address = Address { position: address_position, ..Default::default() };
+            let address = AddressedLines::resolve_address_metadata(instruction, &mut relocatable, address);
+            addresses.push(address);
+            position = AddressedLines::resolve_next_position(instruction, operand, position);
         }
 
         AddressedLines(
@@ -79,16 +50,55 @@ impl<'a> AddressedLines<'a> {
         )
     }
 
+    fn resolve_address_metadata(instruction: &Instruction, relocatable: &mut bool, address: Address) -> Address {
+        let mut imported = false;
+        let mut exported = false;
+
+        match instruction {
+            Instruction::Normal(_) => (),
+            Instruction::Positional(mneumonic) => match mneumonic {
+                PositionalMneumonic::SetAbsoluteOrigin => *relocatable = false,
+                PositionalMneumonic::SetRelocatableOrigin => *relocatable = true,
+                _ => (),
+            },
+            Instruction::Relational(mneumonic) => match mneumonic {
+                RelationalMneumonic::Export => exported = true,
+                RelationalMneumonic::Import => imported = true,
+            },
+        }
+
+        Address { relocatable: *relocatable, imported, exported, ..address }
+    }
+
+    fn resolve_next_position(instruction: &Instruction,  operand: &Operand, current_position: u16) -> u16 {
+        match instruction {
+            Instruction::Normal(_) => current_position + 2,
+            Instruction::Positional(mneumonic) => {
+                if let Operand::Numeric(operand) = operand {
+                    let operand = *operand;
+                    match mneumonic {
+                        PositionalMneumonic::ReserveMemory => current_position + operand,
+                        PositionalMneumonic::SetAbsoluteOrigin | PositionalMneumonic::SetRelocatableOrigin => operand,
+                        _ => current_position,
+                    }
+                } else {
+                    current_position
+                }
+            },
+            _ => current_position,
+        }
+    }
+
     pub fn map_labels(&'a self) -> LabelMap<'a> {
         let mut label_vector: Vec<(Label, &Address)> = Vec::new();
         for AddressedLine { address, line } in &self.0 {
             if let Some(label) = &line.0 {
                 label_vector.push((label.clone(), address));
-            } else if let Instruction::Relational(_) = &line.1.instruction {
-                if let Operand::Simbolic(label) = &line.1.operand {
-                    // TODO Consider moving import/export label to before mneumonic
-                    // to remove this option
-                    label_vector.push((label.clone(), address));
+            } else if let Instruction::Relational(mneumonic) = &line.1.instruction {
+                if let RelationalMneumonic::Import = mneumonic {
+                    if let Operand::Simbolic(label) = &line.1.operand {
+                        label_vector.push((label.clone(), address));
+                    }
                 }
             }
         }
@@ -126,13 +136,19 @@ mod tests {
     fn should_resolve_imported_and_exported_addresses() {
         let input = Lines::parse(indoc! {"
             > EXPORTED
-            < IMPORTED
+            -- Position for imported symbols reflects the order they
+            -- were imported in, starting from 0
+            < IMPORTED1
+            < IMPORTED2
+            < IMPORTED3
             -- Test if value is neither imported nor exported
             JP /0
         "}).unwrap().1;
         let expected = AddressedLines(vec![
             AddressedLine { address: Address { position: 0, exported: true, ..Default::default() }, line: Line::parse("> EXPORTED").unwrap().1 },
-            AddressedLine { address: Address { position: 0, imported: true, ..Default::default() }, line: Line::parse("< IMPORTED").unwrap().1 },
+            AddressedLine { address: Address { position: 0, imported: true, ..Default::default() }, line: Line::parse("< IMPORTED1").unwrap().1 },
+            AddressedLine { address: Address { position: 1, imported: true, ..Default::default() }, line: Line::parse("< IMPORTED2").unwrap().1 },
+            AddressedLine { address: Address { position: 2, imported: true, ..Default::default() }, line: Line::parse("< IMPORTED3").unwrap().1 },
             AddressedLine { address: Address { position: 0, exported: false, imported: false, ..Default::default() }, line: Line::parse("JP /0").unwrap().1 },
         ]);
         assert_eq!(AddressedLines::parse(input), expected);
@@ -193,11 +209,9 @@ mod tests {
     }
 
     #[test]
-    fn should_map_labels() {
+    fn should_map_labels_without_import_export() {
         let input = AddressedLines::parse(
             Lines::parse(indoc! {"
-                > EXPORTED
-                < IMPORTED
                 TEST00 JP /0
                 TEST01 JP /0
                 @ /100
@@ -210,8 +224,6 @@ mod tests {
             "}).unwrap().1
         );
         let expected_addresses = [
-            Address {position: 0x0, exported: true, ..Default::default()},
-            Address {position: 0x0, imported: true, ..Default::default()},
             Address {position: 0x0, ..Default::default()},
             Address {position: 0x2, ..Default::default()},
             Address {position: 0x100, relocatable: false, ..Default::default()},
@@ -219,13 +231,41 @@ mod tests {
             Address {position: 0x200, relocatable: true, ..Default::default()},
         ];
         let expected = LabelMap::from([
-            (Label("EXPORTED"), &expected_addresses[0]),
-            (Label("IMPORTED"), &expected_addresses[1]),
-            (Label("TEST00"), &expected_addresses[2]),
-            (Label("TEST01"), &expected_addresses[3]),
-            (Label("TEST10"), &expected_addresses[4]),
-            (Label("TEST11"), &expected_addresses[5]),
-            (Label("TEST20"), &expected_addresses[6]),
+            (Label("TEST00"), &expected_addresses[0]),
+            (Label("TEST01"), &expected_addresses[1]),
+            (Label("TEST10"), &expected_addresses[2]),
+            (Label("TEST11"), &expected_addresses[3]),
+            (Label("TEST20"), &expected_addresses[4]),
+        ]);
+        assert_eq!(input.map_labels(), expected);
+    }
+
+    #[test]
+    fn should_map_import_export_labels() {
+        let input = AddressedLines::parse(
+            Lines::parse(indoc! {"
+                > EXPORT0
+                > EXPORT1
+                < IMPORT0
+                < IMPORT1
+                NORMAL  JP /0
+                EXPORT0 JP /0
+                EXPORT1 JP /0
+            "}).unwrap().1
+        );
+        let expected_addresses = [
+            Address {position: 0x0, imported: true, ..Default::default()},
+            Address {position: 0x1, imported: true, ..Default::default()},
+            Address {position: 0x0, ..Default::default()},
+            Address {position: 0x2, ..Default::default()},
+            Address {position: 0x4, ..Default::default()},
+        ];
+        let expected = LabelMap::from([
+            (Label("IMPORT0"), &expected_addresses[0]),
+            (Label("IMPORT1"), &expected_addresses[1]),
+            (Label("NORMAL"), &expected_addresses[2]),
+            (Label("EXPORT0"), &expected_addresses[3]),
+            (Label("EXPORT1"), &expected_addresses[4]),
         ]);
         assert_eq!(input.map_labels(), expected);
     }
