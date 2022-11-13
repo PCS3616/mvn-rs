@@ -26,13 +26,23 @@ impl<'a> Lines<'a> {
             |lines| Self::new(lines)
         )(input)
     }
+
 }
 
+impl<'a> IntoIterator for Lines<'a> {
+    type Item = Line<'a>;
+    type IntoIter = std::vec::IntoIter<Self::Item>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.into_iter()
+    }
+
+}
 
 #[cfg(test)]
 mod tests {
     use indoc::indoc;
-    use crate::parser::{operand::Operand, mneumonic::Mneumonic, operation::Operation, label::Label, intruction::Instruction};
+    use crate::parser::{operand::Operand, mneumonic::NormalMneumonic, operation::Operation, label::Label, instruction::Instruction};
     use pretty_assertions::assert_eq;
 
     use super::*;
@@ -45,8 +55,8 @@ mod tests {
                     JP LOOP
         "};
         let expected = Lines(vec![
-             Line::new(Some(Label::new("LOOP")), Operation::new(Instruction::Real(Mneumonic::LoadValue), Operand::new_numeric(0))),
-             Line::new(None, Operation::new(Instruction::Real(Mneumonic::Jump), Operand::new_simbolic(Label::new("LOOP")))),
+             Line::new(Some(Label::new("LOOP")), Operation::new(Instruction::Normal(NormalMneumonic::LoadValue), Operand::new_numeric(0))),
+             Line::new(None, Operation::new(Instruction::Normal(NormalMneumonic::Jump), Operand::new_simbolic(Label::new("LOOP")))),
         ]);
         assert_eq!(Lines::parse(input), Ok(("", expected)));
     }
@@ -62,8 +72,8 @@ mod tests {
 
         "};
         let expected = Lines(vec![
-             Line::new(Some(Label::new("LOOP")), Operation::new(Instruction::Real(Mneumonic::LoadValue), Operand::new_numeric(0))),
-             Line::new(None, Operation::new(Instruction::Real(Mneumonic::Jump), Operand::new_simbolic(Label::new("LOOP")))),
+             Line::new(Some(Label::new("LOOP")), Operation::new(Instruction::Normal(NormalMneumonic::LoadValue), Operand::new_numeric(0))),
+             Line::new(None, Operation::new(Instruction::Normal(NormalMneumonic::Jump), Operand::new_simbolic(Label::new("LOOP")))),
         ]);
         assert_eq!(Lines::parse(input), Ok(("", expected)));
     }
