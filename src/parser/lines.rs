@@ -36,7 +36,6 @@ impl<'a> IntoIterator for Lines<'a> {
     fn into_iter(self) -> Self::IntoIter {
         self.0.into_iter()
     }
-
 }
 
 #[cfg(test)]
@@ -67,7 +66,7 @@ mod tests {
 
             LOOP    LV  /0
 
-            -- End loop
+            ; End loop
                     JP LOOP
 
         "};
