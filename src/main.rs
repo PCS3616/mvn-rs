@@ -8,12 +8,15 @@ fn main() {
     let program = Lines::parse(indoc! {"
         < IMPORTED
         > RESERVE
+        @ /10
                 JP  MAIN
         TWO     K   /2 ; This is an inline comment
+        & /200
         FOUR    K   /4
         RESERVE $   /4
         ; This is a comment
         MAIN    LD  TWO
+        & /100
                 AD  FOUR
                 MM  RESERVE
                 HM  /0
