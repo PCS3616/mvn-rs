@@ -37,7 +37,13 @@ pub fn print(program: &AddressedLines) -> () {
 
         let operation_address = ((nibble_value as u16) << 12) + address.position;
 
-        println!("{:04X} {:04X}", operation_address, operation_value);
+        print!("{:04X} {:04X}", operation_address, operation_value);
+        if let Instruction::Relational(relational_mneumonic) = &operation.instruction {
+            if let Operand::Simbolic(relational_label) = &operation.operand {
+                print!(" ; {} {}", relational_mneumonic.to_str(), relational_label.0);
+            }
+        }
+        print!("\n");
     }
 }
 
