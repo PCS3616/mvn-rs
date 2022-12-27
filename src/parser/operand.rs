@@ -2,10 +2,9 @@ use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::combinator::map;
 use nom::sequence::preceded;
-use nom::IResult;
 
 use super::label::Label;
-use super::util::hexadecimal;
+use super::util::{hexadecimal, LocatedIResult, Span};
 
 #[derive(Debug, PartialEq)]
 pub enum Operand<'a> {
@@ -14,7 +13,7 @@ pub enum Operand<'a> {
 }
 
 impl<'a> Operand<'a> {
-    pub fn parse(input: &'a str) -> IResult<&str, Self> {
+    pub fn parse(input: Span<'a>) -> LocatedIResult<Self> {
         alt((
             // numeric
             map(alt((preceded(tag("/"), hexadecimal),)), |value: u16| {
@@ -41,16 +40,16 @@ mod tests {
 
     #[test]
     fn should_parse_numeric() {
-        assert_eq!(Operand::parse("/000F"), Ok(("", Operand::new_numeric(15))));
-        assert_eq!(Operand::parse("/F"), Ok(("", Operand::new_numeric(15))));
+        assert_eq!(Operand::parse(Span::new("/000F")).unwrap().1, Operand::new_numeric(15));
+        assert_eq!(Operand::parse(Span::new("/F")).unwrap().1, Operand::new_numeric(15));
     }
 
     #[test]
     fn should_parse_simbolic() {
         assert_eq!(
-            Operand::parse("label"),
-            Ok(("", Operand::new_simbolic(Label::new("label"))))
+            Operand::parse(Span::new("label")).unwrap().1,
+            Operand::new_simbolic(Label::new("label"))
         );
-        assert!(Operand::parse("1label").is_err());
+        assert!(Operand::parse(Span::new("1label")).is_err());
     }
 }

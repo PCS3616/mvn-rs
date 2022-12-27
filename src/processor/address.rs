@@ -115,28 +115,29 @@ mod tests {
     use indoc::indoc;
 
     use crate::parser::{line::Line, lines::Lines, label::Label};
+    use crate::parser::util::Span;
 
     use super::*;
 
     #[test]
     fn should_resolve_addresses_without_pseudoinstructions() {
-        let input = Lines::parse(indoc! {"
+        let input = Lines::parse(Span::new(indoc! {"
             JP /0
             K /FFFF
             ; Test if comments are ignored
             AD /0001
-        "}).unwrap().1;
+        "})).unwrap().1;
         let expected = AddressedLines(vec![
-            AddressedLine { address: Address { position: 0, ..Default::default() }, line: Line::parse("JP /0").unwrap().1 },
-            AddressedLine { address: Address { position: 2, ..Default::default() }, line: Line::parse("K /FFFF").unwrap().1 },
-            AddressedLine { address: Address { position: 4, ..Default::default() }, line: Line::parse("AD /0001").unwrap().1 },
+            AddressedLine { address: Address { position: 0, ..Default::default() }, line: Line::parse(Span::new("JP /0")).unwrap().1 },
+            AddressedLine { address: Address { position: 2, ..Default::default() }, line: Line::parse(Span::new("K /FFFF")).unwrap().1 },
+            AddressedLine { address: Address { position: 4, ..Default::default() }, line: Line::parse(Span::new("AD /0001")).unwrap().1 },
         ]);
         assert_eq!(AddressedLines::parse(input), expected);
     }
 
     #[test]
     fn should_resolve_imported_and_exported_addresses() {
-        let input = Lines::parse(indoc! {"
+        let input = Lines::parse(Span::new(indoc! {"
             > EXPORTED
             ; Position for imported symbols reflects the order they
             ; were imported in, starting from 0
@@ -145,67 +146,67 @@ mod tests {
             < IMPORTED3
             ; Test if value is neither imported nor exported
             JP /0
-        "}).unwrap().1;
+        "})).unwrap().1;
         let expected = AddressedLines(vec![
-            AddressedLine { address: Address { position: 0, exported: true, ..Default::default() }, line: Line::parse("> EXPORTED").unwrap().1 },
-            AddressedLine { address: Address { position: 0, imported: true, ..Default::default() }, line: Line::parse("< IMPORTED1").unwrap().1 },
-            AddressedLine { address: Address { position: 1, imported: true, ..Default::default() }, line: Line::parse("< IMPORTED2").unwrap().1 },
-            AddressedLine { address: Address { position: 2, imported: true, ..Default::default() }, line: Line::parse("< IMPORTED3").unwrap().1 },
-            AddressedLine { address: Address { position: 0, exported: false, imported: false, ..Default::default() }, line: Line::parse("JP /0").unwrap().1 },
+            AddressedLine { address: Address { position: 0, exported: true, ..Default::default() }, line: Line::parse(Span::new("> EXPORTED")).unwrap().1 },
+            AddressedLine { address: Address { position: 0, imported: true, ..Default::default() }, line: Line::parse(Span::new("< IMPORTED1")).unwrap().1 },
+            AddressedLine { address: Address { position: 1, imported: true, ..Default::default() }, line: Line::parse(Span::new("< IMPORTED2")).unwrap().1 },
+            AddressedLine { address: Address { position: 2, imported: true, ..Default::default() }, line: Line::parse(Span::new("< IMPORTED3")).unwrap().1 },
+            AddressedLine { address: Address { position: 0, exported: false, imported: false, ..Default::default() }, line: Line::parse(Span::new("JP /0")).unwrap().1 },
         ]);
         assert_eq!(AddressedLines::parse(input), expected);
     }
 
     #[test]
     fn should_set_absolute_address() {
-        let input = Lines::parse(indoc! {"
+        let input = Lines::parse(Span::new(indoc! {"
             JP /0
             @ /100
             JP /0
-        "}).unwrap().1;
+        "})).unwrap().1;
         let expected = AddressedLines(vec![
-            AddressedLine { address: Address { position: 0, ..Default::default() }, line: Line::parse("JP /0").unwrap().1 },
+            AddressedLine { address: Address { position: 0, ..Default::default() }, line: Line::parse(Span::new("JP /0")).unwrap().1 },
             // On the second line, position is meaningless
-            AddressedLine { address: Address { position: 2, ..Default::default() }, line: Line::parse("@ /100").unwrap().1 },
-            AddressedLine { address: Address { position: 0x100, ..Default::default() }, line: Line::parse("JP /0").unwrap().1 },
+            AddressedLine { address: Address { position: 2, ..Default::default() }, line: Line::parse(Span::new("@ /100")).unwrap().1 },
+            AddressedLine { address: Address { position: 0x100, ..Default::default() }, line: Line::parse(Span::new("JP /0")).unwrap().1 },
         ]);
         assert_eq!(AddressedLines::parse(input), expected);
     }
 
     #[test]
     fn should_resolve_relocatable_addresses() {
-        let input = Lines::parse(indoc! {"
+        let input = Lines::parse(Span::new(indoc! {"
             JP /0
             & /100 ; Instructions after this should be relocatable
             AD /001
             @ /010 ; Instructions after this should NOT be relocatable
             JP /0
-        "}).unwrap().1;
+        "})).unwrap().1;
         let expected = AddressedLines(vec![
-            AddressedLine { address: Address { position: 0, ..Default::default() }, line: Line::parse("JP /0").unwrap().1 },
-            AddressedLine { address: Address { position: 2, relocatable: true, ..Default::default() }, line: Line::parse("& /100").unwrap().1 },
-            AddressedLine { address: Address { position: 0x100, relocatable: true, ..Default::default() }, line: Line::parse("AD /001").unwrap().1 },
-            AddressedLine { address: Address { position: 0x102, relocatable: false, ..Default::default() }, line: Line::parse("@ /010").unwrap().1 },
-            AddressedLine { address: Address { position: 0x10, relocatable: false, ..Default::default() }, line: Line::parse("JP /0").unwrap().1 },
+            AddressedLine { address: Address { position: 0, ..Default::default() }, line: Line::parse(Span::new("JP /0")).unwrap().1 },
+            AddressedLine { address: Address { position: 2, relocatable: true, ..Default::default() }, line: Line::parse(Span::new("& /100")).unwrap().1 },
+            AddressedLine { address: Address { position: 0x100, relocatable: true, ..Default::default() }, line: Line::parse(Span::new("AD /001")).unwrap().1 },
+            AddressedLine { address: Address { position: 0x102, relocatable: false, ..Default::default() }, line: Line::parse(Span::new("@ /010")).unwrap().1 },
+            AddressedLine { address: Address { position: 0x10, relocatable: false, ..Default::default() }, line: Line::parse(Span::new("JP /0")).unwrap().1 },
         ]);
         assert_eq!(AddressedLines::parse(input), expected);
     }
 
     #[test]
     fn should_resolve_reserved_memory_addresses() {
-        let input = Lines::parse(indoc! {"
+        let input = Lines::parse(Span::new(indoc! {"
             JP /0
             $ /2
             JP /0
             $ /10
             JP /0
-        "}).unwrap().1;
+        "})).unwrap().1;
         let expected = AddressedLines(vec![
-            AddressedLine { address: Address { position: 0x0, ..Default::default() }, line: Line::parse("JP /0").unwrap().1 },
-            AddressedLine { address: Address { position: 0x2, ..Default::default() }, line: Line::parse("$ /2").unwrap().1 },
-            AddressedLine { address: Address { position: 0x4, ..Default::default() }, line: Line::parse("JP /0").unwrap().1 },
-            AddressedLine { address: Address { position: 0x6, ..Default::default() }, line: Line::parse("$ /10").unwrap().1 },
-            AddressedLine { address: Address { position: 0x16, ..Default::default() }, line: Line::parse("JP /0").unwrap().1 },
+            AddressedLine { address: Address { position: 0x0, ..Default::default() }, line: Line::parse(Span::new("JP /0")).unwrap().1 },
+            AddressedLine { address: Address { position: 0x2, ..Default::default() }, line: Line::parse(Span::new("$ /2")).unwrap().1 },
+            AddressedLine { address: Address { position: 0x4, ..Default::default() }, line: Line::parse(Span::new("JP /0")).unwrap().1 },
+            AddressedLine { address: Address { position: 0x6, ..Default::default() }, line: Line::parse(Span::new("$ /10")).unwrap().1 },
+            AddressedLine { address: Address { position: 0x16, ..Default::default() }, line: Line::parse(Span::new("JP /0")).unwrap().1 },
         ]);
         assert_eq!(AddressedLines::parse(input), expected);
     }
@@ -213,7 +214,7 @@ mod tests {
     #[test]
     fn should_map_labels_without_import_export() {
         let input = AddressedLines::parse(
-            Lines::parse(indoc! {"
+            Lines::parse(Span::new(indoc! {"
                 TEST00 JP /0
                 TEST01 JP /0
                 @ /100
@@ -223,7 +224,7 @@ mod tests {
                 & /200
                 TEST20 JP /0
                 # THEEND
-            "}).unwrap().1
+            "})).unwrap().1
         );
         let expected = LabelMap::from([
             (Label("TEST00"), Address {position: 0x0, ..Default::default()}),
@@ -238,7 +239,7 @@ mod tests {
     #[test]
     fn should_map_import_export_labels() {
         let input = AddressedLines::parse(
-            Lines::parse(indoc! {"
+            Lines::parse(Span::new(indoc! {"
                 > EXPORT0
                 > EXPORT1
                 < IMPORT0
@@ -246,7 +247,7 @@ mod tests {
                 NORMAL  JP /0
                 EXPORT0 JP /0
                 EXPORT1 JP /0
-            "}).unwrap().1
+            "})).unwrap().1
         );
         let expected = LabelMap::from([
             (Label("IMPORT0"), Address {position: 0x0, imported: true, ..Default::default()}),

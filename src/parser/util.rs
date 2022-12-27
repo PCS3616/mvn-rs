@@ -7,6 +7,10 @@ use nom::sequence::{pair, terminated};
 use nom::combinator::{recognize, map_res, map};
 use nom::{IResult, InputLength};
 use num_traits::Num;
+use nom_locate::LocatedSpan;
+
+pub type Span<'a> = LocatedSpan<&'a str>;
+pub type LocatedIResult<'a, O> = nom::IResult<Span<'a>, O>;
 
 /*
  * Parsing identifiers that may start with a letter (or underscore)
@@ -14,27 +18,28 @@ use num_traits::Num;
  *
  * From: https://github.com/Geal/nom/blob/main/doc/nom_recipes.md#identifiers
  */
-pub fn identifier(input: &str) -> IResult<&str, &str> {
-  recognize(
+pub fn identifier(input: Span) -> LocatedIResult<&str> {
+  let (remainder, matched) = recognize(
     pair(
       alt((alpha1, tag("_"))),
       many0_count(alt((alphanumeric1, tag("_"))))
     )
-  )(input)
+  )(input)?;
+  Ok((remainder, *matched))
 }
 
 /*
  *
  * From: https://github.com/Geal/nom/blob/main/doc/nom_recipes.md#hexadecimal
  */
-pub fn hexadecimal<T: Num>(input: &str) -> IResult<&str, T> {
+pub fn hexadecimal<T: Num>(input: Span) -> LocatedIResult<T> {
   map_res(
     recognize(
       many1(
         terminated(one_of("0123456789abcdefABCDEF"), many0(char('_')))
       )
     ),
-    |out: &str| T::from_str_radix(&str::replace(&out, "_", ""), 16)
+    |out: Span| T::from_str_radix(&str::replace(&out, "_", ""), 16)
   )(input)
 }
 
@@ -76,8 +81,8 @@ mod tests {
 
     #[test]
     fn should_parse_hexa() {
-        assert_eq!(hexadecimal("F"), Ok(("", 0xF)));
-        assert_eq!(hexadecimal("0"), Ok(("", 0x0)));
+        assert_eq!(hexadecimal::<u8>(Span::new("F")).unwrap().1, 0xF);
+        assert_eq!(hexadecimal::<u8>(Span::new("0")).unwrap().1, 0x0);
     }
 }
 

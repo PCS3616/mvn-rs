@@ -1,10 +1,10 @@
-use nom::IResult;
 use nom::combinator::map;
 use nom::character::complete::line_ending;
 
 use crate::parser::line::Line;
 
-use super::{line::comment_or_space, util::separated_list1_opt};
+use super::line::comment_or_space;
+use super::util::{LocatedIResult, Span, separated_list1_opt};
 
 #[derive(Debug, PartialEq)]
 pub struct Lines<'a>(
@@ -16,7 +16,7 @@ impl<'a> Lines<'a> {
         Lines(lines)
     }
 
-    pub fn parse(input: &'a str) -> IResult<&str, Self> {
+    pub fn parse(input: Span<'a>) -> LocatedIResult<Self> {
         map(
             separated_list1_opt(
                 line_ending,
@@ -49,31 +49,31 @@ mod tests {
 
     #[test]
     fn should_returns_code_given_asm() {
-        let input = indoc! {"
+        let input = Span::new(indoc! {"
             LOOP    LV  /0
                     JP LOOP
-        "};
+        "});
         let expected = Lines(vec![
              Line::new(Some(Label::new("LOOP")), Operation::new(Instruction::Normal(NormalMneumonic::LoadValue), Operand::new_numeric(0))),
              Line::new(None, Operation::new(Instruction::Normal(NormalMneumonic::Jump), Operand::new_simbolic(Label::new("LOOP")))),
         ]);
-        assert_eq!(Lines::parse(input), Ok(("", expected)));
+        assert_eq!(Lines::parse(input).unwrap().1, expected);
     }
 
     #[test]
     fn should_returns_code_given_asm_blank_lines() {
-        let input = indoc! {"
+        let input = Span::new(indoc! {"
 
             LOOP    LV  /0
 
             ; End loop
                     JP LOOP
 
-        "};
+        "});
         let expected = Lines(vec![
              Line::new(Some(Label::new("LOOP")), Operation::new(Instruction::Normal(NormalMneumonic::LoadValue), Operand::new_numeric(0))),
              Line::new(None, Operation::new(Instruction::Normal(NormalMneumonic::Jump), Operand::new_simbolic(Label::new("LOOP")))),
         ]);
-        assert_eq!(Lines::parse(input), Ok(("", expected)));
+        assert_eq!(Lines::parse(input).unwrap().1, expected);
     }
 }

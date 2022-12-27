@@ -1,10 +1,11 @@
-use nom::IResult;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::combinator::value;
 
+use super::util::{LocatedIResult, Span};
+
 pub trait Mneumonic: Sized {
-    fn parse(input: &str) -> IResult<&str, Self>;
+    fn parse(input: Span) -> LocatedIResult<Self>;
     fn to_str(&self) -> &str;
     fn value(&self) -> u8 {
         0
@@ -33,7 +34,7 @@ pub enum NormalMneumonic {
 }
 
 impl Mneumonic for NormalMneumonic {
-    fn parse(input: &str) -> IResult<&str, Self> {
+    fn parse(input: Span) -> LocatedIResult<Self> {
         alt((
             value(Self::Jump, tag(Self::Jump.to_str())),
             value(Self::JumpIfZero, tag(Self::JumpIfZero.to_str())),
@@ -110,7 +111,7 @@ pub enum PositionalMneumonic {
 }
 
 impl Mneumonic for PositionalMneumonic {
-    fn parse(input: &str) -> IResult<&str, Self> {
+    fn parse(input: Span) -> LocatedIResult<Self> {
         alt((
             value(Self::SetAbsoluteOrigin, tag(Self::SetAbsoluteOrigin.to_str())),
             value(Self::ReserveMemory, tag(Self::ReserveMemory.to_str())),
@@ -136,7 +137,7 @@ pub enum RelationalMneumonic {
 }
 
 impl Mneumonic for RelationalMneumonic {
-    fn parse(input: &str) -> IResult<&str, Self> {
+    fn parse(input: Span) -> LocatedIResult<Self> {
         alt((
             value(Self::Export, tag(Self::Export.to_str())),
             value(Self::Import, tag(Self::Import.to_str())),
@@ -158,61 +159,75 @@ mod tests {
 
     #[test]
     fn should_parse_mneumonic() {
-        assert_eq!(NormalMneumonic::parse("JP"), Ok(("", NormalMneumonic::Jump)));
-        assert_eq!(NormalMneumonic::parse("JZ"), Ok(("",  NormalMneumonic::JumpIfZero)));
-        assert_eq!(NormalMneumonic::parse("JN"), Ok(("",  NormalMneumonic::JumpIfNegative)));
-        assert_eq!(NormalMneumonic::parse("LV"), Ok(("",  NormalMneumonic::LoadValue)));
-        assert_eq!(NormalMneumonic::parse("AD"), Ok(("",  NormalMneumonic::Add)));
-        assert_eq!(NormalMneumonic::parse("SB"), Ok(("",  NormalMneumonic::Subtract)));
-        assert_eq!(NormalMneumonic::parse("ML"), Ok(("",  NormalMneumonic::Multiply)));
-        assert_eq!(NormalMneumonic::parse("DV"), Ok(("",  NormalMneumonic::Divide)));
-        assert_eq!(NormalMneumonic::parse("LD"), Ok(("",  NormalMneumonic::Load)));
-        assert_eq!(NormalMneumonic::parse("MM"), Ok(("",  NormalMneumonic::Memory)));
-        assert_eq!(NormalMneumonic::parse("SC"), Ok(("",  NormalMneumonic::Subroutine)));
-        assert_eq!(NormalMneumonic::parse("RS"), Ok(("",  NormalMneumonic::ReturnFromSubrotine)));
-        assert_eq!(NormalMneumonic::parse("HM"), Ok(("",  NormalMneumonic::HaltMachine)));
-        assert_eq!(NormalMneumonic::parse("GD"), Ok(("",  NormalMneumonic::GetData)));
-        assert_eq!(NormalMneumonic::parse("PD"), Ok(("",  NormalMneumonic::PutData)));
-        assert_eq!(NormalMneumonic::parse("OS"), Ok(("",  NormalMneumonic::OperatingSystem)));
+        let inputs_outputs = [
+            ("JP", NormalMneumonic::Jump),
+            ("JZ", NormalMneumonic::JumpIfZero),
+            ("JN", NormalMneumonic::JumpIfNegative),
+            ("LV", NormalMneumonic::LoadValue),
+            ("AD", NormalMneumonic::Add),
+            ("SB", NormalMneumonic::Subtract),
+            ("ML", NormalMneumonic::Multiply),
+            ("DV", NormalMneumonic::Divide),
+            ("LD", NormalMneumonic::Load),
+            ("MM", NormalMneumonic::Memory),
+            ("SC", NormalMneumonic::Subroutine),
+            ("RS", NormalMneumonic::ReturnFromSubrotine),
+            ("HM", NormalMneumonic::HaltMachine),
+            ("GD", NormalMneumonic::GetData),
+            ("PD", NormalMneumonic::PutData),
+            ("OS", NormalMneumonic::OperatingSystem),
+        ];
+
+        for (input, output) in inputs_outputs {
+            assert_eq!(
+                NormalMneumonic::parse(Span::new(input)).unwrap().1,
+                output,
+            );
+        }
     }
 
     #[test]
     fn should_return_value() {
-        assert_eq!(NormalMneumonic::Jump.value(), 0x0);
-        assert_eq!(NormalMneumonic::JumpIfZero.value(), 0x1);
-        assert_eq!(NormalMneumonic::JumpIfNegative.value(), 0x2);
-        assert_eq!(NormalMneumonic::LoadValue.value(), 0x3);
-        assert_eq!(NormalMneumonic::Add.value(), 0x4);
-        assert_eq!(NormalMneumonic::Subtract.value(), 0x5);
-        assert_eq!(NormalMneumonic::Multiply.value(), 0x6);
-        assert_eq!(NormalMneumonic::Divide.value(), 0x7);
-        assert_eq!(NormalMneumonic::Load.value(), 0x8);
-        assert_eq!(NormalMneumonic::Memory.value(), 0x9);
-        assert_eq!(NormalMneumonic::Subroutine.value(), 0xA);
-        assert_eq!(NormalMneumonic::ReturnFromSubrotine.value(), 0xB);
-        assert_eq!(NormalMneumonic::HaltMachine.value(), 0xC);
-        assert_eq!(NormalMneumonic::GetData.value(), 0xD);
-        assert_eq!(NormalMneumonic::PutData.value(), 0xE);
-        assert_eq!(NormalMneumonic::OperatingSystem.value(), 0xF);
+        let inputs_outputs = [
+            (NormalMneumonic::Jump, 0x0),
+            (NormalMneumonic::JumpIfZero, 0x1),
+            (NormalMneumonic::JumpIfNegative, 0x2),
+            (NormalMneumonic::LoadValue, 0x3),
+            (NormalMneumonic::Add, 0x4),
+            (NormalMneumonic::Subtract, 0x5),
+            (NormalMneumonic::Multiply, 0x6),
+            (NormalMneumonic::Divide, 0x7),
+            (NormalMneumonic::Load, 0x8),
+            (NormalMneumonic::Memory, 0x9),
+            (NormalMneumonic::Subroutine, 0xA),
+            (NormalMneumonic::ReturnFromSubrotine, 0xB),
+            (NormalMneumonic::HaltMachine, 0xC),
+            (NormalMneumonic::GetData, 0xD),
+            (NormalMneumonic::PutData, 0xE),
+            (NormalMneumonic::OperatingSystem, 0xF),
+        ];
+
+        for (input, output) in inputs_outputs.into_iter() {
+            assert_eq!(input.value(), output);
+        }
     }
 
     #[test]
     fn should_parse_constant_assignment() {
-        assert_eq!(NormalMneumonic::parse("K"), Ok(("", NormalMneumonic::SetConstant)));
+        assert_eq!(NormalMneumonic::parse(Span::new("K")).unwrap().1, NormalMneumonic::SetConstant);
     }
 
     #[test]
     fn should_parse_positional_pseudo_mneumonic() {
-        assert_eq!(PositionalMneumonic::parse("@"), Ok(("", PositionalMneumonic::SetAbsoluteOrigin)));
-        assert_eq!(PositionalMneumonic::parse("&"), Ok(("", PositionalMneumonic::SetRelocatableOrigin)));
-        assert_eq!(PositionalMneumonic::parse("$"), Ok(("", PositionalMneumonic::ReserveMemory)));
-        assert_eq!(PositionalMneumonic::parse("#"), Ok(("", PositionalMneumonic::SetEnd)));
+        assert_eq!(PositionalMneumonic::parse(Span::new("@")).unwrap().1, PositionalMneumonic::SetAbsoluteOrigin);
+        assert_eq!(PositionalMneumonic::parse(Span::new("&")).unwrap().1, PositionalMneumonic::SetRelocatableOrigin);
+        assert_eq!(PositionalMneumonic::parse(Span::new("$")).unwrap().1, PositionalMneumonic::ReserveMemory);
+        assert_eq!(PositionalMneumonic::parse(Span::new("#")).unwrap().1, PositionalMneumonic::SetEnd);
     }
 
     #[test]
     fn should_parse_relational_pseudo_mneumonic() {
-        assert_eq!(RelationalMneumonic::parse(">"), Ok(("", RelationalMneumonic::Export)));
-        assert_eq!(RelationalMneumonic::parse("<"), Ok(("", RelationalMneumonic::Import)));
+        assert_eq!(RelationalMneumonic::parse(Span::new(">")).unwrap().1, RelationalMneumonic::Export);
+        assert_eq!(RelationalMneumonic::parse(Span::new("<")).unwrap().1, RelationalMneumonic::Import);
     }
 }
-

@@ -3,9 +3,10 @@ use indoc::indoc;
 use mvn::parser::lines::Lines;
 use mvn::processor::address::AddressedLines;
 use mvn::writer::base::print;
+use mvn::parser::util::Span;
 
 fn main() {
-    let program = Lines::parse(indoc! {"
+    let program = Lines::parse(Span::new(indoc! {"
         < IMPORTED
         > RESERVE
         @ /10
@@ -21,7 +22,7 @@ fn main() {
                 MM  RESERVE
                 HM  /0
         # MAIN
-    "}).unwrap().1;
+    "})).unwrap().1;
     let addresses_program = AddressedLines::parse(program);
     print(&addresses_program);
 }

@@ -1,9 +1,8 @@
 use std::fmt;
 
-use nom::IResult;
 use nom::combinator::map;
 
-use crate::parser::util::identifier;
+use crate::parser::util::{identifier, LocatedIResult, Span};
 
 #[derive(Debug, PartialEq, Clone, Eq, PartialOrd, Ord)]
 pub struct Label<'a>(
@@ -15,7 +14,7 @@ impl<'a> Label<'a> {
         Self(label)
     }
 
-    pub fn parse(input: &'a str) -> IResult<&str, Self> {
+    pub fn parse(input: Span<'a>) -> LocatedIResult<Self> {
         map(
             identifier,
             |out: &str| Self::new(out)
@@ -36,9 +35,15 @@ mod tests {
 
     #[test]
     fn should_parse_label() {
-        assert_eq!(Label::parse("VAL_A"), Ok(("", Label("VAL_A"))));
-        assert_eq!(Label::parse("V1"), Ok(("",Label("V1"))));
-        assert!(Label::parse("1V").is_err());
+        let inputs = ["VAL_A", "V1"];
+        for input in inputs.into_iter() {
+            let output = Label(input);
+            assert_eq!(
+                Label::parse(Span::new(input)).unwrap().1,
+                output,
+            );
+        }
+        assert!(Label::parse(Span::new("1V")).is_err());
     }
 }
 
