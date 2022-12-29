@@ -3,41 +3,30 @@ use nom::bytes::complete::tag;
 use nom::combinator::map;
 use nom::sequence::preceded;
 use nom::IResult;
+use types;
 
-use super::label::Label;
-use super::util::hexadecimal;
+use super::hexadecimal;
+use super::Parse;
 
-#[derive(Debug, PartialEq)]
-pub enum Operand<'a> {
-    Simbolic(Label<'a>),
-    Numeric(u16),
-}
-
-impl<'a> Operand<'a> {
-    pub fn parse(input: &'a str) -> IResult<&str, Self> {
+impl<'a> Parse<'a> for types::Operand<'a> {
+    fn parse(input: &'a str) -> IResult<&'a str, Self> {
         alt((
-            // numeric
+            // Numeric
             map(alt((preceded(tag("/"), hexadecimal),)), |value: u16| {
                 Self::new_numeric(value)
             }),
-            // simbolic
-            map(Label::parse, |label| Self::new_simbolic(label)),
+            // Symbolic
+            map(types::Label::parse, |label| Self::new_symbolic(label)),
         ))(input)
-    }
-
-    pub fn new_numeric(value: u16) -> Self {
-        Self::Numeric(value)
-    }
-
-    pub fn new_simbolic(label: Label<'a>) -> Self {
-        Self::Simbolic(label)
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use pretty_assertions::assert_eq;
+    use types::*;
+
+    use super::*;
 
     #[test]
     fn should_parse_numeric() {
@@ -46,10 +35,10 @@ mod tests {
     }
 
     #[test]
-    fn should_parse_simbolic() {
+    fn should_parse_symbolic() {
         assert_eq!(
             Operand::parse("label"),
-            Ok(("", Operand::new_simbolic(Label::new("label"))))
+            Ok(("", Operand::new_symbolic(Label::new("label"))))
         );
         assert!(Operand::parse("1label").is_err());
     }
