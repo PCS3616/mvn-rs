@@ -1,3 +1,4 @@
+use dotenv_codegen::dotenv;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::combinator::value;
@@ -84,86 +85,66 @@ mod tests {
     #[test]
     fn should_parse_mneumonic() {
         assert_eq!(
-            NormalMneumonic::parse("JP"),
+            NormalMneumonic::parse(dotenv!("MNEUMONIC_JUMP")),
             Ok(("", NormalMneumonic::Jump))
         );
         assert_eq!(
-            NormalMneumonic::parse("JZ"),
+            NormalMneumonic::parse(dotenv!("MNEUMONIC_JUMP_IF_ZERO")),
             Ok(("", NormalMneumonic::JumpIfZero))
         );
         assert_eq!(
-            NormalMneumonic::parse("JN"),
+            NormalMneumonic::parse(dotenv!("MNEUMONIC_JUMP_IF_NEGATIVE")),
             Ok(("", NormalMneumonic::JumpIfNegative))
         );
         assert_eq!(
-            NormalMneumonic::parse("LV"),
+            NormalMneumonic::parse(dotenv!("MNEUMONIC_LOAD_VALUE")),
             Ok(("", NormalMneumonic::LoadValue))
         );
-        assert_eq!(NormalMneumonic::parse("AD"), Ok(("", NormalMneumonic::Add)));
+        assert_eq!(NormalMneumonic::parse(dotenv!("MNEUMONIC_ADD")), Ok(("", NormalMneumonic::Add)));
         assert_eq!(
-            NormalMneumonic::parse("SB"),
+            NormalMneumonic::parse(dotenv!("MNEUMONIC_SUBTRACT")),
             Ok(("", NormalMneumonic::Subtract))
         );
         assert_eq!(
-            NormalMneumonic::parse("ML"),
+            NormalMneumonic::parse(dotenv!("MNEUMONIC_MULTIPLY")),
             Ok(("", NormalMneumonic::Multiply))
         );
         assert_eq!(
-            NormalMneumonic::parse("DV"),
+            NormalMneumonic::parse(dotenv!("MNEUMONIC_DIVIDE")),
             Ok(("", NormalMneumonic::Divide))
         );
         assert_eq!(
-            NormalMneumonic::parse("LD"),
+            NormalMneumonic::parse(dotenv!("MNEUMONIC_LOAD")),
             Ok(("", NormalMneumonic::Load))
         );
         assert_eq!(
-            NormalMneumonic::parse("MM"),
+            NormalMneumonic::parse(dotenv!("MNEUMONIC_MEMORY")),
             Ok(("", NormalMneumonic::Memory))
         );
         assert_eq!(
-            NormalMneumonic::parse("SC"),
+            NormalMneumonic::parse(dotenv!("MNEUMONIC_SUBROUTINE")),
             Ok(("", NormalMneumonic::Subroutine))
         );
         assert_eq!(
-            NormalMneumonic::parse("RS"),
+            NormalMneumonic::parse(dotenv!("MNEUMONIC_RETURN_FROM_SUBROTINE")),
             Ok(("", NormalMneumonic::ReturnFromSubrotine))
         );
         assert_eq!(
-            NormalMneumonic::parse("HM"),
+            NormalMneumonic::parse(dotenv!("MNEUMONIC_HALT_MACHINE")),
             Ok(("", NormalMneumonic::HaltMachine))
         );
         assert_eq!(
-            NormalMneumonic::parse("GD"),
+            NormalMneumonic::parse(dotenv!("MNEUMONIC_GET_DATA")),
             Ok(("", NormalMneumonic::GetData))
         );
         assert_eq!(
-            NormalMneumonic::parse("PD"),
+            NormalMneumonic::parse(dotenv!("MNEUMONIC_PUT_DATA")),
             Ok(("", NormalMneumonic::PutData))
         );
         assert_eq!(
-            NormalMneumonic::parse("OS"),
+            NormalMneumonic::parse(dotenv!("MNEUMONIC_OPERATING_SYSTEM")),
             Ok(("", NormalMneumonic::OperatingSystem))
         );
-    }
-
-    #[test]
-    fn should_return_value() {
-        assert_eq!(u8::from(NormalMneumonic::Jump), 0x0);
-        assert_eq!(u8::from(NormalMneumonic::JumpIfZero), 0x1);
-        assert_eq!(u8::from(NormalMneumonic::JumpIfNegative), 0x2);
-        assert_eq!(u8::from(NormalMneumonic::LoadValue), 0x3);
-        assert_eq!(u8::from(NormalMneumonic::Add), 0x4);
-        assert_eq!(u8::from(NormalMneumonic::Subtract), 0x5);
-        assert_eq!(u8::from(NormalMneumonic::Multiply), 0x6);
-        assert_eq!(u8::from(NormalMneumonic::Divide), 0x7);
-        assert_eq!(u8::from(NormalMneumonic::Load), 0x8);
-        assert_eq!(u8::from(NormalMneumonic::Memory), 0x9);
-        assert_eq!(u8::from(NormalMneumonic::Subroutine), 0xA);
-        assert_eq!(u8::from(NormalMneumonic::ReturnFromSubrotine), 0xB);
-        assert_eq!(u8::from(NormalMneumonic::HaltMachine), 0xC);
-        assert_eq!(u8::from(NormalMneumonic::GetData), 0xD);
-        assert_eq!(u8::from(NormalMneumonic::PutData), 0xE);
-        assert_eq!(u8::from(NormalMneumonic::OperatingSystem), 0xF);
     }
 
     #[test]
