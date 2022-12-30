@@ -1,15 +1,6 @@
-[package]
-name = "mvn"
-version = "0.1.0"
-edition = "2021"
+[workspace]
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
-indoc = "1.0.6"
-nom = "7.1.1"
-num-traits = "0.2.15"
-regex = "1.6.0"
-
-[dev-dependencies]
-pretty_assertions = "1.2.1"
+members = [
+    "mvn-assembler",
+    "mvn-types",
+]

@@ -1,0 +1,16 @@
+[package]
+name = "mvn-assembler"
+version = "0.0.1"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+types = { path = "../mvn-types", package = "mvn-types" }
+indoc = "1.0.6"
+nom = "7.1.1"
+num-traits = "0.2.15"
+regex = "1.6.0"
+
+[dev-dependencies]
+pretty_assertions = "1.2.1"
