@@ -26,7 +26,7 @@ pub enum NormalMneumonic {
 
 impl fmt::Display for NormalMneumonic {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mneumonic = match &self {
+        let mneumonic: &str = match &self {
             Self::Jump  => dotenv!("MNEUMONIC_JUMP"),
             Self::JumpIfZero  => dotenv!("MNEUMONIC_JUMP_IF_ZERO"),
             Self::JumpIfNegative  => dotenv!("MNEUMONIC_JUMP_IF_NEGATIVE"),
