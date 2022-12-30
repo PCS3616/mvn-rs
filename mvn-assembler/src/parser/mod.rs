@@ -6,7 +6,7 @@ pub mod operand;
 pub mod operation;
 pub mod program;
 
-pub(crate) trait Parse<'a>: Sized {
+pub trait Parse<'a>: Sized {
     fn parse(input: &'a str) -> IResult<&'a str, Self>;
 }
 
