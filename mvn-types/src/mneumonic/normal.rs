@@ -1,4 +1,4 @@
-use std::convert::{From, TryFrom};
+use std::convert::From;
 use std::fmt;
 
 use dotenv_codegen::dotenv;
@@ -49,51 +49,49 @@ impl fmt::Display for NormalMneumonic {
     }
 }
 
-impl TryFrom<u8> for NormalMneumonic {
-    type Error = Error;
-    fn try_from(value: u8) -> Result<Self, Self::Error> {
+impl From<NormalMneumonic> for u8 {
+    fn from(value: NormalMneumonic) -> Self {
         match value {
-            0x0 => Ok(Self::Jump),
-            0x1 => Ok(Self::JumpIfZero),
-            0x2 => Ok(Self::JumpIfNegative),
-            0x3 => Ok(Self::LoadValue),
-            0x4 => Ok(Self::Add),
-            0x5 => Ok(Self::Subtract),
-            0x6 => Ok(Self::Multiply),
-            0x7 => Ok(Self::Divide),
-            0x8 => Ok(Self::Load),
-            0x9 => Ok(Self::Memory),
-            0xA => Ok(Self::Subroutine),
-            0xB => Ok(Self::ReturnFromSubrotine),
-            0xC => Ok(Self::HaltMachine),
-            0xD => Ok(Self::GetData),
-            0xE => Ok(Self::PutData),
-            0xF => Ok(Self::OperatingSystem),
-            _ => Err("Value does not represent a valid instruction."),
+            NormalMneumonic::Jump  => hex_char_to_u8(dotenv!("VALUE_JUMP")),
+            NormalMneumonic::JumpIfZero => hex_char_to_u8(dotenv!("VALUE_JUMP_IF_ZERO")),
+            NormalMneumonic::JumpIfNegative => hex_char_to_u8(dotenv!("VALUE_JUMP_IF_NEGATIVE")),
+            NormalMneumonic::LoadValue => hex_char_to_u8(dotenv!("VALUE_LOAD_VALUE")),
+            NormalMneumonic::Add => hex_char_to_u8(dotenv!("VALUE_ADD")),
+            NormalMneumonic::Subtract => hex_char_to_u8(dotenv!("VALUE_SUBTRACT")),
+            NormalMneumonic::Multiply => hex_char_to_u8(dotenv!("VALUE_MULTIPLY")),
+            NormalMneumonic::Divide => hex_char_to_u8(dotenv!("VALUE_DIVIDE")),
+            NormalMneumonic::Load => hex_char_to_u8(dotenv!("VALUE_LOAD")),
+            NormalMneumonic::Memory => hex_char_to_u8(dotenv!("VALUE_MEMORY")),
+            NormalMneumonic::Subroutine => hex_char_to_u8(dotenv!("VALUE_SUBROUTINE")),
+            NormalMneumonic::ReturnFromSubrotine => hex_char_to_u8(dotenv!("VALUE_RETURN_FROM_SUBROTINE")),
+            NormalMneumonic::HaltMachine => hex_char_to_u8(dotenv!("VALUE_HALT_MACHINE")),
+            NormalMneumonic::GetData => hex_char_to_u8(dotenv!("VALUE_GET_DATA")),
+            NormalMneumonic::PutData => hex_char_to_u8(dotenv!("VALUE_PUT_DATA")),
+            NormalMneumonic::OperatingSystem => hex_char_to_u8(dotenv!("VALUE_OPERATING_SYSTEM")),
+            NormalMneumonic::SetConstant => 0,
         }
     }
 }
 
-impl From<NormalMneumonic> for u8 {
-    fn from(value: NormalMneumonic) -> Self {
-        match value {
-            NormalMneumonic::Jump | NormalMneumonic::SetConstant => 0x0,
-            NormalMneumonic::JumpIfZero => 0x1,
-            NormalMneumonic::JumpIfNegative => 0x2,
-            NormalMneumonic::LoadValue => 0x3,
-            NormalMneumonic::Add => 0x4,
-            NormalMneumonic::Subtract => 0x5,
-            NormalMneumonic::Multiply => 0x6,
-            NormalMneumonic::Divide => 0x7,
-            NormalMneumonic::Load => 0x8,
-            NormalMneumonic::Memory => 0x9,
-            NormalMneumonic::Subroutine => 0xA,
-            NormalMneumonic::ReturnFromSubrotine => 0xB,
-            NormalMneumonic::HaltMachine => 0xC,
-            NormalMneumonic::GetData => 0xD,
-            NormalMneumonic::PutData => 0xE,
-            NormalMneumonic::OperatingSystem => 0xF,
-        }
+fn hex_char_to_u8(string: &str) -> u8 {
+    match string {
+        "0" => 0x0,
+        "1" => 0x1,
+        "2" => 0x2,
+        "3" => 0x3,
+        "4" => 0x4,
+        "5" => 0x5,
+        "6" => 0x6,
+        "7" => 0x7,
+        "8" => 0x8,
+        "9" => 0x9,
+        "A" => 0xA,
+        "B" => 0xB,
+        "C" => 0xC,
+        "D" => 0xD,
+        "E" => 0xE,
+        "F" => 0xF,
+        _ => panic!("Input string does not represent hexadecimal character.")
     }
 }
 
@@ -103,62 +101,24 @@ mod tests {
     use pretty_assertions::assert_eq;
 
     #[test]
-    fn u8_should_convert_to_normal_menumonic() {
-        assert_eq!(0x0.try_into(), Ok(NormalMneumonic::Jump));
-        assert_eq!(0x1.try_into(), Ok(NormalMneumonic::JumpIfZero));
-        assert_eq!(0x2.try_into(), Ok(NormalMneumonic::JumpIfNegative));
-        assert_eq!(0x3.try_into(), Ok(NormalMneumonic::LoadValue));
-        assert_eq!(0x4.try_into(), Ok(NormalMneumonic::Add));
-        assert_eq!(0x5.try_into(), Ok(NormalMneumonic::Subtract));
-        assert_eq!(0x6.try_into(), Ok(NormalMneumonic::Multiply));
-        assert_eq!(0x7.try_into(), Ok(NormalMneumonic::Divide));
-        assert_eq!(0x8.try_into(), Ok(NormalMneumonic::Load));
-        assert_eq!(0x9.try_into(), Ok(NormalMneumonic::Memory));
-        assert_eq!(0xA.try_into(), Ok(NormalMneumonic::Subroutine));
-        assert_eq!(0xB.try_into(), Ok(NormalMneumonic::ReturnFromSubrotine));
-        assert_eq!(0xC.try_into(), Ok(NormalMneumonic::HaltMachine));
-        assert_eq!(0xD.try_into(), Ok(NormalMneumonic::GetData));
-        assert_eq!(0xE.try_into(), Ok(NormalMneumonic::PutData));
-        assert_eq!(0xF.try_into(), Ok(NormalMneumonic::OperatingSystem));
-    }
-
-    #[test]
-    #[ignore = "Expensive exhaustive test not necessary"]
-    fn invalid_u8_should_not_convert_to_normal_mneumonic() {
-        for i in 16u8..=255u8 {
-            // 16u8.. panics on overflow
-            let result: Result<NormalMneumonic, _> = i.try_into();
-            assert!(result.is_err());
-        }
-    }
-
-    #[test]
     fn normal_menumonic_should_convert_to_u8() {
-        assert_eq!(u8::from(NormalMneumonic::Jump), 0x0);
-        assert_eq!(u8::from(NormalMneumonic::JumpIfZero), 0x1);
-        assert_eq!(u8::from(NormalMneumonic::JumpIfNegative), 0x2);
-        assert_eq!(u8::from(NormalMneumonic::LoadValue), 0x3);
-        assert_eq!(u8::from(NormalMneumonic::Add), 0x4);
-        assert_eq!(u8::from(NormalMneumonic::Subtract), 0x5);
-        assert_eq!(u8::from(NormalMneumonic::Multiply), 0x6);
-        assert_eq!(u8::from(NormalMneumonic::Divide), 0x7);
-        assert_eq!(u8::from(NormalMneumonic::Load), 0x8);
-        assert_eq!(u8::from(NormalMneumonic::Memory), 0x9);
-        assert_eq!(u8::from(NormalMneumonic::Subroutine), 0xA);
-        assert_eq!(u8::from(NormalMneumonic::ReturnFromSubrotine), 0xB);
-        assert_eq!(u8::from(NormalMneumonic::HaltMachine), 0xC);
-        assert_eq!(u8::from(NormalMneumonic::GetData), 0xD);
-        assert_eq!(u8::from(NormalMneumonic::PutData), 0xE);
-        assert_eq!(u8::from(NormalMneumonic::OperatingSystem), 0xF);
-    }
-
-    #[test]
-    fn normal_menumonic_should_convert_to_u8_and_back() {
-        for mneumonic_value in 0..16 {
-            let mneumonic_value = mneumonic_value as u8;
-            let mneumonic = NormalMneumonic::try_from(mneumonic_value).unwrap();
-            assert_eq!(mneumonic_value, mneumonic.into());
-        }
+        assert_eq!(u8::from(NormalMneumonic::Jump ), hex_char_to_u8(dotenv!("VALUE_JUMP")));
+        assert_eq!(u8::from(NormalMneumonic::JumpIfZero), hex_char_to_u8(dotenv!("VALUE_JUMP_IF_ZERO")));
+        assert_eq!(u8::from(NormalMneumonic::JumpIfNegative), hex_char_to_u8(dotenv!("VALUE_JUMP_IF_NEGATIVE")));
+        assert_eq!(u8::from(NormalMneumonic::LoadValue), hex_char_to_u8(dotenv!("VALUE_LOAD_VALUE")));
+        assert_eq!(u8::from(NormalMneumonic::Add), hex_char_to_u8(dotenv!("VALUE_ADD")));
+        assert_eq!(u8::from(NormalMneumonic::Subtract), hex_char_to_u8(dotenv!("VALUE_SUBTRACT")));
+        assert_eq!(u8::from(NormalMneumonic::Multiply), hex_char_to_u8(dotenv!("VALUE_MULTIPLY")));
+        assert_eq!(u8::from(NormalMneumonic::Divide), hex_char_to_u8(dotenv!("VALUE_DIVIDE")));
+        assert_eq!(u8::from(NormalMneumonic::Load), hex_char_to_u8(dotenv!("VALUE_LOAD")));
+        assert_eq!(u8::from(NormalMneumonic::Memory), hex_char_to_u8(dotenv!("VALUE_MEMORY")));
+        assert_eq!(u8::from(NormalMneumonic::Subroutine), hex_char_to_u8(dotenv!("VALUE_SUBROUTINE")));
+        assert_eq!(u8::from(NormalMneumonic::ReturnFromSubrotine), hex_char_to_u8(dotenv!("VALUE_RETURN_FROM_SUBROTINE")));
+        assert_eq!(u8::from(NormalMneumonic::HaltMachine), hex_char_to_u8(dotenv!("VALUE_HALT_MACHINE")));
+        assert_eq!(u8::from(NormalMneumonic::GetData), hex_char_to_u8(dotenv!("VALUE_GET_DATA")));
+        assert_eq!(u8::from(NormalMneumonic::PutData), hex_char_to_u8(dotenv!("VALUE_PUT_DATA")));
+        assert_eq!(u8::from(NormalMneumonic::OperatingSystem), hex_char_to_u8(dotenv!("VALUE_OPERATING_SYSTEM")));
+        assert_eq!(u8::from(NormalMneumonic::SetConstant), 0);
     }
 
     #[test]
