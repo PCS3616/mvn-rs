@@ -1,7 +1,7 @@
 use std::convert::{From, TryFrom};
 use std::fmt;
 
-type Error = &'static str;
+use dotenv_codegen::dotenv;
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub enum NormalMneumonic {
@@ -27,23 +27,23 @@ pub enum NormalMneumonic {
 impl fmt::Display for NormalMneumonic {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mneumonic = match &self {
-            Self::Jump => "JP",
-            Self::JumpIfZero => "JZ",
-            Self::JumpIfNegative => "JN",
-            Self::LoadValue => "LV",
-            Self::Add => "AD",
-            Self::Subtract => "SB",
-            Self::Multiply => "ML",
-            Self::Divide => "DV",
-            Self::Load => "LD",
-            Self::Memory => "MM",
-            Self::Subroutine => "SC",
-            Self::ReturnFromSubrotine => "RS",
-            Self::HaltMachine => "HM",
-            Self::GetData => "GD",
-            Self::PutData => "PD",
-            Self::OperatingSystem => "OS",
-            Self::SetConstant => "K",
+            Self::Jump  => dotenv!("MNEUMONIC_JUMP"),
+            Self::JumpIfZero  => dotenv!("MNEUMONIC_JUMP_IF_ZERO"),
+            Self::JumpIfNegative  => dotenv!("MNEUMONIC_JUMP_IF_NEGATIVE"),
+            Self::LoadValue  => dotenv!("MNEUMONIC_LOAD_VALUE"),
+            Self::Add  => dotenv!("MNEUMONIC_ADD"),
+            Self::Subtract  => dotenv!("MNEUMONIC_SUBTRACT"),
+            Self::Multiply  => dotenv!("MNEUMONIC_MULTIPLY"),
+            Self::Divide  => dotenv!("MNEUMONIC_DIVIDE"),
+            Self::Load  => dotenv!("MNEUMONIC_LOAD"),
+            Self::Memory  => dotenv!("MNEUMONIC_MEMORY"),
+            Self::Subroutine  => dotenv!("MNEUMONIC_SUBROUTINE"),
+            Self::ReturnFromSubrotine  => dotenv!("MNEUMONIC_RETURN_FROM_SUBROTINE"),
+            Self::HaltMachine  => dotenv!("MNEUMONIC_HALT_MACHINE"),
+            Self::GetData  => dotenv!("MNEUMONIC_GET_DATA"),
+            Self::PutData  => dotenv!("MNEUMONIC_PUT_DATA"),
+            Self::OperatingSystem  => dotenv!("MNEUMONIC_OPERATING_SYSTEM"),
+            Self::SetConstant  => dotenv!("MNEUMONIC_SET_CONSTANT"),
         };
         write!(f, "{mneumonic}")
     }
@@ -163,22 +163,24 @@ mod tests {
 
     #[test]
     fn instruction_menumonic_should_convert_to_string() {
-        assert_eq!(NormalMneumonic::Jump.to_string(), "JP");
-        assert_eq!(NormalMneumonic::JumpIfZero.to_string(), "JZ");
-        assert_eq!(NormalMneumonic::JumpIfNegative.to_string(), "JN");
-        assert_eq!(NormalMneumonic::LoadValue.to_string(), "LV");
-        assert_eq!(NormalMneumonic::Add.to_string(), "AD");
-        assert_eq!(NormalMneumonic::Subtract.to_string(), "SB");
-        assert_eq!(NormalMneumonic::Multiply.to_string(), "ML");
-        assert_eq!(NormalMneumonic::Divide.to_string(), "DV");
-        assert_eq!(NormalMneumonic::Load.to_string(), "LD");
-        assert_eq!(NormalMneumonic::Memory.to_string(), "MM");
-        assert_eq!(NormalMneumonic::Subroutine.to_string(), "SC");
-        assert_eq!(NormalMneumonic::ReturnFromSubrotine.to_string(), "RS");
-        assert_eq!(NormalMneumonic::HaltMachine.to_string(), "HM");
-        assert_eq!(NormalMneumonic::GetData.to_string(), "GD");
-        assert_eq!(NormalMneumonic::PutData.to_string(), "PD");
-        assert_eq!(NormalMneumonic::OperatingSystem.to_string(), "OS");
+        assert_eq!(NormalMneumonic::Jump.to_string(), dotenv!("MNEUMONIC_JUMP"));
+        assert_eq!(NormalMneumonic::JumpIfZero.to_string(), dotenv!("MNEUMONIC_JUMP_IF_ZERO"));
+        assert_eq!(NormalMneumonic::JumpIfNegative.to_string(), dotenv!("MNEUMONIC_JUMP_IF_NEGATIVE"));
+        assert_eq!(NormalMneumonic::LoadValue.to_string(), dotenv!("MNEUMONIC_LOAD_VALUE"));
+        assert_eq!(NormalMneumonic::Add.to_string(), dotenv!("MNEUMONIC_ADD"));
+        assert_eq!(NormalMneumonic::Subtract.to_string(), dotenv!("MNEUMONIC_SUBTRACT"));
+        assert_eq!(NormalMneumonic::Multiply.to_string(), dotenv!("MNEUMONIC_MULTIPLY"));
+        assert_eq!(NormalMneumonic::Divide.to_string(), dotenv!("MNEUMONIC_DIVIDE"));
+        assert_eq!(NormalMneumonic::Load.to_string(), dotenv!("MNEUMONIC_LOAD"));
+        assert_eq!(NormalMneumonic::Memory.to_string(), dotenv!("MNEUMONIC_MEMORY"));
+        assert_eq!(NormalMneumonic::Subroutine.to_string(), dotenv!("MNEUMONIC_SUBROUTINE"));
+        assert_eq!(NormalMneumonic::ReturnFromSubrotine.to_string(), dotenv!("MNEUMONIC_RETURN_FROM_SUBROTINE"));
+        assert_eq!(NormalMneumonic::HaltMachine.to_string(), dotenv!("MNEUMONIC_HALT_MACHINE"));
+        assert_eq!(NormalMneumonic::GetData.to_string(), dotenv!("MNEUMONIC_GET_DATA"));
+        assert_eq!(NormalMneumonic::PutData.to_string(), dotenv!("MNEUMONIC_PUT_DATA"));
+        assert_eq!(NormalMneumonic::OperatingSystem.to_string(), dotenv!("MNEUMONIC_OPERATING_SYSTEM"));
+        assert_eq!(NormalMneumonic::SetConstant.to_string(), dotenv!("MNEUMONIC_SET_CONSTANT"));
+
     }
 
     #[test]
