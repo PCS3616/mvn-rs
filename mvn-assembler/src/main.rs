@@ -22,7 +22,9 @@ fn main() {
                 MM  RESERVE
                 HM  /0
         # MAIN
-    "}).unwrap().1;
+    "})
+    .unwrap()
+    .1;
     let addresses_program = AddressedProgram::process(program);
     print(&addresses_program);
 }

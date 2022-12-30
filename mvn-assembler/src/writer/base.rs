@@ -1,12 +1,17 @@
-use crate::processor::address::{AddressedProgram, AddressedLine, Address};
-use types::{Line, Instruction, Operand};
+use crate::processor::address::{Address, AddressedLine, AddressedProgram};
+use types::{Instruction, Line, Operand};
 
 pub fn print(program: &AddressedProgram) -> () {
     let labels = program.map_labels();
-    let default_address = Address { ..Default::default() };
+    let default_address = Address {
+        ..Default::default()
+    };
 
     for AddressedLine { address, line } in program.lines.iter() {
-        let Line { label: _, operation } = line;
+        let Line {
+            label: _,
+            operation,
+        } = line;
         if let Instruction::Positional(_) = operation.instruction {
             continue;
         }
@@ -17,7 +22,7 @@ pub fn print(program: &AddressedProgram) -> () {
             &default_address
         };
 
-        let operand_value: u16 = if let Operand::Numeric(value) =  &operation.operand {
+        let operand_value: u16 = if let Operand::Numeric(value) = &operation.operand {
             *value
         } else {
             operand_address.position
@@ -44,7 +49,6 @@ pub fn print(program: &AddressedProgram) -> () {
         print!("\n");
     }
 }
-
 
 fn resolve_nibble(line: &Address, operand: &Address) -> u8 {
     ((0 as u8) << 3) // One bit is not necessary, so it's fixed at zero
