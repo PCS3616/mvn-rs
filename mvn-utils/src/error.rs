@@ -21,14 +21,23 @@ pub struct MvnParseError<'a> {
 
 impl<'a> MvnParseError<'a> {
     pub fn new(message: String, span: Span<'a>) -> Self {
-        Self { span, message: Some(message) }
+        Self {
+            span,
+            message: Some(message),
+        }
     }
 
-    pub fn span(&self) -> &Span { &self.span }
+    pub fn span(&self) -> &Span {
+        &self.span
+    }
 
-    pub fn line(&self) -> u32 { self.span().location_line() }
+    pub fn line(&self) -> u32 {
+        self.span().location_line()
+    }
 
-    pub fn offset(&self) -> usize { self.span().location_offset() }
+    pub fn offset(&self) -> usize {
+        self.span().location_offset()
+    }
 }
 
 // That's what makes it nom-compatible.

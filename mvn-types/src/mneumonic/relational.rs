@@ -25,7 +25,13 @@ mod tests {
 
     #[test]
     fn relational_pseudo_mneumonic_should_convert_to_string() {
-        assert_eq!(RelationalMneumonic::Export.to_string(), dotenv!("MNEUMONIC_EXPORT"));
-        assert_eq!(RelationalMneumonic::Import.to_string(), dotenv!("MNEUMONIC_IMPORT"));
+        assert_eq!(
+            RelationalMneumonic::Export.to_string(),
+            dotenv!("MNEUMONIC_EXPORT")
+        );
+        assert_eq!(
+            RelationalMneumonic::Import.to_string(),
+            dotenv!("MNEUMONIC_IMPORT")
+        );
     }
 }
