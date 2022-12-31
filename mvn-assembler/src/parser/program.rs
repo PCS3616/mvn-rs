@@ -1,13 +1,13 @@
 use nom::character::complete::line_ending;
 use nom::combinator::map;
-use nom::IResult;
 use types;
 
+use super::error::{LocatedIResult, Span};
 use super::Parse;
 use super::{comment_or_space, separated_list1_opt};
 
 impl<'a> Parse<'a> for types::Program<'a> {
-    fn parse(input: &'a str) -> IResult<&'a str, Self> {
+    fn parse(input: Span<'a>) -> LocatedIResult<'a, Self> {
         map(
             separated_list1_opt(line_ending, types::Line::parse, comment_or_space),
             |lines| Self::new(lines),
@@ -26,10 +26,10 @@ mod tests {
 
     #[test]
     fn should_returns_code_given_asm() {
-        let input = indoc! {"
+        let input = Span::new(indoc! {"
             LOOP    LV  /0
                     JP LOOP
-        "};
+        "});
         let expected = Program::new(vec![
             Line::new(
                 Some(Label::new("LOOP")),
@@ -46,19 +46,19 @@ mod tests {
                 ),
             ),
         ]);
-        assert_eq!(Program::parse(input), Ok(("", expected)));
+        assert_eq!(Program::parse(input).unwrap().1, expected);
     }
 
     #[test]
     fn should_returns_code_given_asm_blank_lines() {
-        let input = indoc! {"
+        let input = Span::new(indoc! {"
 
             LOOP    LV  /0
 
             ; End loop
                     JP LOOP
 
-        "};
+        "});
         let expected = Program::new(vec![
             Line::new(
                 Some(Label::new("LOOP")),
@@ -75,6 +75,6 @@ mod tests {
                 ),
             ),
         ]);
-        assert_eq!(Program::parse(input), Ok(("", expected)));
+        assert_eq!(Program::parse(input).unwrap().1, expected);
     }
 }

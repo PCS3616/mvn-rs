@@ -1,12 +1,18 @@
 use nom::combinator::map;
-use nom::IResult;
+use utils::error_or;
 
+use super::error::{LocatedIResult, Span};
 use super::identifier;
 use super::Parse;
 
 impl<'a> Parse<'a> for types::Label<'a> {
-    fn parse(input: &'a str) -> IResult<&'a str, Self> {
-        map(identifier, |out: &str| Self::new(out))(input)
+    fn parse(input: Span<'a>) -> LocatedIResult<'a, Self> {
+        let label = map(identifier, |out: &str| Self::new(out))(input);
+        error_or!(
+            label,
+            input,
+            "invalid label; perhaps you started with a number?"
+        )
     }
 }
 
@@ -19,8 +25,11 @@ mod tests {
 
     #[test]
     fn should_parse_label() {
-        assert_eq!(Label::parse("VAL_A"), Ok(("", Label::new("VAL_A"))));
-        assert_eq!(Label::parse("V1"), Ok(("", Label::new("V1"))));
-        assert!(Label::parse("1V").is_err());
+        let inputs = ["VAL_A", "V1"];
+        for input in inputs.into_iter() {
+            let output = Label::new(input);
+            assert_eq!(Label::parse(Span::new(input)).unwrap().1, output,);
+        }
+        assert!(Label::parse(Span::new("1V")).is_err());
     }
 }
