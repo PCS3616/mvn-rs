@@ -5,7 +5,7 @@ use nom::combinator::map;
 use nom::sequence::preceded;
 use types;
 use utils::error_or;
-use utils::hexadecimal;
+use utils::{ascii, hexadecimal};
 
 use super::error::{LocatedIResult, Span};
 use super::Parse;
@@ -18,6 +18,8 @@ impl<'a> Parse<'a> for types::Operand<'a> {
                 preceded(tag("/"), hexadecimal),
                 // Numeric: decimal
                 preceded(tag("="), complete::u16),
+                // ASCII
+                preceded(tag("\""), ascii),
             )),
             |value: u16| Self::new_numeric(value),
         )(input);
@@ -71,6 +73,18 @@ mod tests {
         assert_eq!(
             Operand::parse(Span::new("=10")).unwrap().1,
             Operand::new_numeric(10)
+        );
+    }
+
+    #[test]
+    fn should_parse_ascii() {
+        assert_eq!(
+            Operand::parse(Span::new("\"0")).unwrap().1,
+            Operand::new_numeric(0x30)
+        );
+        assert_eq!(
+            Operand::parse(Span::new("\"00")).unwrap().1,
+            Operand::new_numeric(0x3030)
         );
     }
 

@@ -9,3 +9,6 @@ edition = "2021"
 nom = "7.1.1"
 nom_locate = "4.0.0"
 num-traits = "0.2.15"
+
+[dev-dependencies]
+pretty_assertions = "1.2.1"
