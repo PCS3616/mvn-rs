@@ -10,6 +10,7 @@ fn main() {
     let program = Program::parse(Span::new(indoc! {"
         < IMPORTED
         > RESERVE
+        > TWO
         @ /10
                 JP  MAIN
         TWO     K   /2 ; This is an inline comment
