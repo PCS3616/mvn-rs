@@ -63,7 +63,7 @@ pub fn hex_char_to_u8(string: &str) -> u8 {
     }
 }
 
-pub fn comment_or_space(input: error::Span) -> error::LocatedIResult<Option<&str>> {
+pub fn comment_or_space(input: error::Span) -> error::LocatedIResult<Option<Span>> {
     let (rest, matched) = preceded(
         space0,
         opt(preceded(
@@ -72,7 +72,7 @@ pub fn comment_or_space(input: error::Span) -> error::LocatedIResult<Option<&str
         )),
     )(input)?;
     let matched = match matched {
-        Some(span) => Some(*span),
+        Some(span) => Some(span),
         None => None,
     };
     Ok((rest, matched))
@@ -120,10 +120,10 @@ mod tests {
     #[test]
     fn should_parse_comment_with_varying_spacing() {
         let comment = Some("FOO");
-        assert_eq!(comment_or_space(";FOO".into()).unwrap().1, comment);
-        assert_eq!(comment_or_space(" ;FOO".into()).unwrap().1, comment);
-        assert_eq!(comment_or_space("; FOO".into()).unwrap().1, comment);
-        assert_eq!(comment_or_space(" ; FOO".into()).unwrap().1, comment);
+        assert_eq!(comment_or_space(";FOO".into()).unwrap().1.map(|span| *span), comment);
+        assert_eq!(comment_or_space(" ;FOO".into()).unwrap().1.map(|span| *span), comment);
+        assert_eq!(comment_or_space("; FOO".into()).unwrap().1.map(|span| *span), comment);
+        assert_eq!(comment_or_space(" ; FOO".into()).unwrap().1.map(|span| *span), comment);
     }
 
     #[test]
@@ -137,7 +137,7 @@ mod tests {
         ];
         for comment in comments {
             assert_eq!(
-                comment_or_space(Span::new(format!(";{comment}").as_str())).unwrap().1,
+                comment_or_space(Span::new(format!(";{comment}").as_str())).unwrap().1.map(|span| *span),
                 Some(comment),
             );
         }
@@ -151,7 +151,7 @@ mod tests {
         ];
         for comment in comments {
             assert_eq!(
-                comment_or_space(Span::new(format!(";{comment}").as_str())).unwrap().1,
+                comment_or_space(Span::new(format!(";{comment}").as_str())).unwrap().1.map(|span| *span),
                 Some(comment),
             );
         }
