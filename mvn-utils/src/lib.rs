@@ -4,6 +4,9 @@ use error::{Span, LocatedIResult};
 use nom::character::complete::{hex_digit1, satisfy};
 use nom::combinator::{map, recognize};
 use nom::multi::many_m_n;
+use nom::character::complete::{space0, char, not_line_ending};
+use nom::combinator::opt;
+use nom::sequence::{preceded, tuple};
 use num_traits::Num;
 
 /*
@@ -60,8 +63,24 @@ pub fn hex_char_to_u8(string: &str) -> u8 {
     }
 }
 
+pub fn comment_or_space(input: error::Span) -> error::LocatedIResult<Option<&str>> {
+    let (rest, matched) = preceded(
+        space0,
+        opt(preceded(
+            tuple((char(';'), space0)),
+            not_line_ending
+        )),
+    )(input)?;
+    let matched = match matched {
+        Some(span) => Some(*span),
+        None => None,
+    };
+    Ok((rest, matched))
+}
+
 #[cfg(test)]
 mod tests {
+    use pretty_assertions::assert_eq;
     use super::*;
 
     #[test]
@@ -91,5 +110,50 @@ mod tests {
         }
         assert!(ascii(Span::new("ó")).is_err());
         assert!(ascii(Span::new("\u{80}")).is_err());
+    }
+
+    #[test]
+    fn should_parse_no_comment() {
+        assert!(comment_or_space(Span::new("")).is_ok())
+    }
+
+    #[test]
+    fn should_parse_comment_with_varying_spacing() {
+        let comment = Some("FOO");
+        assert_eq!(comment_or_space(";FOO".into()).unwrap().1, comment);
+        assert_eq!(comment_or_space(" ;FOO".into()).unwrap().1, comment);
+        assert_eq!(comment_or_space("; FOO".into()).unwrap().1, comment);
+        assert_eq!(comment_or_space(" ; FOO".into()).unwrap().1, comment);
+    }
+
+    #[test]
+    fn should_parse_normal_comment() {
+        let comments = vec![
+            "Foo",
+            "bar",
+            "Um comentário",
+            "Numb3rs s2",
+            "Speci@l ch@racters!",
+        ];
+        for comment in comments {
+            assert_eq!(
+                comment_or_space(Span::new(format!(";{comment}").as_str())).unwrap().1,
+                Some(comment),
+            );
+        }
+    }
+
+    #[test]
+    fn should_parse_symbol_table_comment() {
+        let comments = vec![
+            "> EXPORT",
+            "< IMPORT",
+        ];
+        for comment in comments {
+            assert_eq!(
+                comment_or_space(Span::new(format!(";{comment}").as_str())).unwrap().1,
+                Some(comment),
+            );
+        }
     }
 }
