@@ -2,20 +2,21 @@ use nom::character::complete::{space0, space1};
 use nom::combinator::opt;
 use nom::sequence::{delimited, tuple, terminated};
 use types::{Line, Token, Label, Operation};
+use types;
+use utils::comment_or_space;
 
-use super::comment_or_space;
 use super::error::{LocatedIResult, Span};
 use super::Parse;
 
 impl<'a> Parse<'a> for Line<'a> {
-    fn parse(input: Span<'a>) -> LocatedIResult<'a, Self> {
+    fn parse_assembler(input: Span<'a>) -> LocatedIResult<'a, Self> {
         delimited(
             space0,
             tuple((
                 opt(
-                    terminated(Token::<Label>::parse, space1)
+                    terminated(Token::<Label>::parse_assembler, space1)
                 ),
-                Operation::parse,
+                Operation::parse_assembler,
             )),
             comment_or_space,
         )(input)
@@ -46,7 +47,7 @@ mod tests {
         ];
         for (input, instruction_column, operand_column) in inputs_outputs.into_iter() {
             assert_eq!(
-                Line::parse(input.into()).unwrap().1,
+                Line::parse_assembler(input.into()).unwrap().1,
                 Line::new(
                     None,
                     Operation::new(
@@ -67,7 +68,7 @@ mod tests {
         ];
         for (input, label_column, instruction_column, operand_column) in inputs_outputs.into_iter() {
             assert_eq!(
-                Line::parse(input.into()).unwrap().1,
+                Line::parse_assembler(input.into()).unwrap().1,
                 Line::new(
                     Some(Token::new(Position::new(1, label_column), "LOOP".into())),
                     Operation::new(
@@ -91,7 +92,7 @@ mod tests {
                 |column| Token::new(Position::new(1, column), "LOOP".into()),
             );
             assert_eq!(
-                Line::parse(input.into()).unwrap().1,
+                Line::parse_assembler(input.into()).unwrap().1,
                 Line::new(
                     label,
                     Operation::new(

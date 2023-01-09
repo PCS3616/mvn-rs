@@ -6,7 +6,7 @@ use super::identifier;
 use super::Parse;
 
 impl<'a> Parse<'a> for types::Label<'a> {
-    fn parse(input: Span<'a>) -> LocatedIResult<'a, Self> {
+    fn parse_assembler(input: Span<'a>) -> LocatedIResult<'a, Self> {
         let label = not(types::Instruction::parse)(input).and_then(
             |(input, _)| map(identifier, |out: &str| Self::new(out))(input)
         );
@@ -69,9 +69,9 @@ mod tests {
         let inputs = ["VAL_A", "V1"];
         for input in inputs.into_iter() {
             let output = Label::new(input);
-            assert_eq!(Label::parse(Span::new(input)).unwrap().1, output,);
+            assert_eq!(Label::parse_assembler(Span::new(input)).unwrap().1, output,);
         }
-        assert!(Label::parse(Span::new("1V")).is_err());
+        assert!(Label::parse_assembler(Span::new("1V")).is_err());
     }
 
     #[test]

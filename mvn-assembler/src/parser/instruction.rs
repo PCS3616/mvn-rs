@@ -7,13 +7,13 @@ use super::error::{LocatedIResult, Span};
 use super::Parse;
 
 impl<'a> Parse<'a> for types::Instruction {
-    fn parse(input: Span<'a>) -> LocatedIResult<'a, Self> {
+    fn parse_assembler(input: Span<'a>) -> LocatedIResult<'a, Self> {
         let mneumonic = alt((
-            map(mneumonic::NormalMneumonic::parse, |o| Self::Normal(o)),
-            map(mneumonic::PositionalMneumonic::parse, |o| {
+            map(mneumonic::NormalMneumonic::parse_assembler, |o| Self::Normal(o)),
+            map(mneumonic::PositionalMneumonic::parse_assembler, |o| {
                 Self::Positional(o)
             }),
-            map(mneumonic::RelationalMneumonic::parse, |o| {
+            map(mneumonic::RelationalMneumonic::parse_assembler, |o| {
                 Self::Relational(o)
             }),
         ))(input);
@@ -41,7 +41,7 @@ mod tests {
             (">", Instruction::Relational(RelationalMneumonic::Export)),
         ];
         for (input, output) in inputs_outputs.into_iter() {
-            assert_eq!(Instruction::parse(Span::new(input)).unwrap().1, output,);
+            assert_eq!(Instruction::parse_assembler(Span::new(input)).unwrap().1, output,);
         }
     }
 }

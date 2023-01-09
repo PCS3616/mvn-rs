@@ -163,7 +163,7 @@ mod tests {
 
     #[test]
     fn should_resolve_addresses_without_pseudoinstructions() {
-        let input = Program::parse(Span::new(indoc! {"
+        let input = Program::parse_assembler(Span::new(indoc! {"
             JP /0
             K /FFFF
             ; Test if comments are ignored
@@ -208,7 +208,7 @@ mod tests {
 
     #[test]
     fn should_resolve_imported_and_exported_addresses() {
-        let input = Program::parse(Span::new(indoc! {"
+        let input = Program::parse_assembler(Span::new(indoc! {"
             > EXPORTED
             ; Position for imported symbols reflects the order they
             ; were imported in, starting from 0
@@ -283,7 +283,7 @@ mod tests {
 
     #[test]
     fn should_set_absolute_address() {
-        let input = Program::parse(Span::new(indoc! {"
+        let input = Program::parse_assembler(Span::new(indoc! {"
             JP /0
             @ /100
             JP /0
@@ -328,7 +328,7 @@ mod tests {
 
     #[test]
     fn should_resolve_relocatable_addresses() {
-        let input = Program::parse(Span::new(indoc! {"
+        let input = Program::parse_assembler(Span::new(indoc! {"
             JP /0
             & /100 ; Instructions after this should be relocatable
             AD /001
@@ -398,7 +398,7 @@ mod tests {
 
     #[test]
     fn should_resolve_reserved_memory_addresses() {
-        let input = Program::parse(Span::new(indoc! {"
+        let input = Program::parse_assembler(Span::new(indoc! {"
             JP /0
             $ /2
             JP /0
@@ -465,7 +465,7 @@ mod tests {
     #[test]
     fn should_map_labels_without_import_export() {
         let input = AddressedProgram::process(
-            Program::parse(Span::new(indoc! {"
+            Program::parse_assembler(Span::new(indoc! {"
                 TEST00 JP /0
                 TEST01 JP /0
                 @ /100
@@ -525,7 +525,7 @@ mod tests {
     #[test]
     fn should_map_import_export_labels() {
         let input = AddressedProgram::process(
-            Program::parse(Span::new(indoc! {"
+            Program::parse_assembler(Span::new(indoc! {"
                 > EXPORT0
                 > EXPORT1
                 < IMPORT0
@@ -581,7 +581,7 @@ mod tests {
 
     #[test]
     fn imported_labels_should_not_get_line_attributes() {
-        let input = AddressedProgram::process(Program::parse(indoc! {"
+        let input = AddressedProgram::process(Program::parse_assembler(indoc! {"
             & /0
             < IMPORT
         "}.into()).unwrap().1);

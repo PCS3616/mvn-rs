@@ -4,22 +4,22 @@ use nom::combinator::{map, value, eof};
 use nom::multi::{many0, many_till};
 use nom::sequence::{delimited, pair};
 use types;
+use utils::comment_or_space;
 
 use super::error::{LocatedIResult, Span};
 use super::Parse;
-use super::comment_or_space;
 
 fn ignorable<'a>(input: Span<'a>) -> LocatedIResult<'a, ()> {
     value((), many0(pair(comment_or_space, line_ending)))(input)
 }
 
 impl<'a> Parse<'a> for types::Program<'a> {
-    fn parse(input: Span<'a>) -> LocatedIResult<'a, Self> {
+    fn parse_assembler(input: Span<'a>) -> LocatedIResult<'a, Self> {
         map(
             many_till(
                 delimited(
                     ignorable,
-                    types::Line::parse,
+                    types::Line::parse_assembler,
                     ignorable,
                 ),
                 eof,
@@ -57,7 +57,7 @@ mod tests {
                 ),
             ),
         ]);
-        assert_eq!(Program::parse(input).unwrap().1, expected);
+        assert_eq!(Program::parse_assembler(input).unwrap().1, expected);
     }
 
     #[test]
@@ -87,6 +87,6 @@ mod tests {
                 ),
             ),
         ]);
-        assert_eq!(Program::parse(input).unwrap().1, expected);
+        assert_eq!(Program::parse_assembler(input).unwrap().1, expected);
     }
 }

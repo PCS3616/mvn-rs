@@ -11,7 +11,7 @@ use nom_locate::position;
 pub use utils::error;
 
 pub trait Parse<'a>: Sized {
-    fn parse(input: error::Span<'a>) -> error::LocatedIResult<'a, Self>;
+    fn parse_assembler(input: error::Span<'a>) -> error::LocatedIResult<'a, Self>;
 }
 
 impl<'a, T: Parse<'a>> Parse<'a> for types::Token<T> {
@@ -26,10 +26,8 @@ impl<'a, T: Parse<'a>> Parse<'a> for types::Token<T> {
 
 use nom::branch::alt;
 use nom::bytes::complete::tag;
-use nom::character::complete::{alpha1, alphanumeric1, char};
-use nom::character::complete::{not_line_ending, space0};
+use nom::character::complete::{alpha1, alphanumeric1};
 use nom::combinator::{map, recognize};
-use nom::combinator::{opt, value};
 use nom::error::ParseError;
 use nom::multi::{many0_count, many1, separated_list1};
 use nom::sequence::pair;
@@ -72,11 +70,4 @@ pub fn separated_list1_opt<I: Clone + InputLength, O, O2, O3, E: ParseError<I>>(
         separated_list1(many1(sep), alt_opt(usable, ignorable)),
         |ls| ls.into_iter().flatten().collect(),
     )
-}
-
-pub fn comment_or_space(input: error::Span) -> error::LocatedIResult<()> {
-    value(
-        (), // Output is thrown away.
-        pair(space0, opt(pair(char(';'), not_line_ending))),
-    )(input)
 }

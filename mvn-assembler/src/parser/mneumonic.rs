@@ -8,7 +8,7 @@ use super::error::{LocatedIResult, Span};
 use super::Parse;
 
 impl<'a> Parse<'a> for types::mneumonic::NormalMneumonic {
-    fn parse(input: Span<'a>) -> LocatedIResult<Self> {
+    fn parse_assembler(input: Span<'a>) -> LocatedIResult<Self> {
         let mneumonic = alt((
             value(Self::Jump, tag(Self::Jump.to_string().as_str())),
             value(Self::JumpIfZero, tag(Self::JumpIfZero.to_string().as_str())),
@@ -53,7 +53,7 @@ impl<'a> Parse<'a> for types::mneumonic::NormalMneumonic {
 }
 
 impl<'a> Parse<'a> for types::mneumonic::PositionalMneumonic {
-    fn parse(input: Span<'a>) -> LocatedIResult<'a, Self> {
+    fn parse_assembler(input: Span<'a>) -> LocatedIResult<'a, Self> {
         let mneumonic = alt((
             value(
                 Self::SetAbsoluteOrigin,
@@ -79,7 +79,7 @@ impl<'a> Parse<'a> for types::mneumonic::PositionalMneumonic {
 }
 
 impl<'a> Parse<'a> for types::mneumonic::RelationalMneumonic {
-    fn parse(input: Span<'a>) -> LocatedIResult<'a, Self> {
+    fn parse_assembler(input: Span<'a>) -> LocatedIResult<'a, Self> {
         let mneumonic = alt((
             value(Self::Export, tag(Self::Export.to_string().as_str())),
             value(Self::Import, tag(Self::Import.to_string().as_str())),
@@ -138,14 +138,14 @@ mod tests {
         ];
 
         for (input, output) in inputs_outputs {
-            assert_eq!(NormalMneumonic::parse(Span::new(input)).unwrap().1, output,);
+            assert_eq!(NormalMneumonic::parse_assembler(Span::new(input)).unwrap().1, output,);
         }
     }
 
     #[test]
     fn should_parse_constant_assignment() {
         assert_eq!(
-            NormalMneumonic::parse(Span::new("K")).unwrap().1,
+            NormalMneumonic::parse_assembler(Span::new("K")).unwrap().1,
             NormalMneumonic::SetConstant
         );
     }
@@ -153,19 +153,19 @@ mod tests {
     #[test]
     fn should_parse_positional_pseudo_mneumonic() {
         assert_eq!(
-            PositionalMneumonic::parse(Span::new("@")).unwrap().1,
+            PositionalMneumonic::parse_assembler(Span::new("@")).unwrap().1,
             PositionalMneumonic::SetAbsoluteOrigin
         );
         assert_eq!(
-            PositionalMneumonic::parse(Span::new("&")).unwrap().1,
+            PositionalMneumonic::parse_assembler(Span::new("&")).unwrap().1,
             PositionalMneumonic::SetRelocatableOrigin
         );
         assert_eq!(
-            PositionalMneumonic::parse(Span::new("$")).unwrap().1,
+            PositionalMneumonic::parse_assembler(Span::new("$")).unwrap().1,
             PositionalMneumonic::ReserveMemory
         );
         assert_eq!(
-            PositionalMneumonic::parse(Span::new("#")).unwrap().1,
+            PositionalMneumonic::parse_assembler(Span::new("#")).unwrap().1,
             PositionalMneumonic::SetEnd
         );
     }
@@ -173,11 +173,11 @@ mod tests {
     #[test]
     fn should_parse_relational_pseudo_mneumonic() {
         assert_eq!(
-            RelationalMneumonic::parse(Span::new(">")).unwrap().1,
+            RelationalMneumonic::parse_assembler(Span::new(">")).unwrap().1,
             RelationalMneumonic::Export
         );
         assert_eq!(
-            RelationalMneumonic::parse(Span::new("<")).unwrap().1,
+            RelationalMneumonic::parse_assembler(Span::new("<")).unwrap().1,
             RelationalMneumonic::Import
         );
     }
