@@ -127,7 +127,10 @@ impl<'a> AddressedProgram<'a> {
             } else if let Instruction::Relational(mneumonic) = &line.operation.instruction {
                 if let RelationalMneumonic::Import = mneumonic {
                     if let Operand::Symbolic(label) = &line.operation.operand {
-                        label_vector.push((label.clone(), address.clone()));
+                        label_vector.push((
+                            label.clone(),
+                            Address {imported: true, ..Default::default()}
+                        ));
                     }
                 }
             }
@@ -508,6 +511,24 @@ mod tests {
                 },
             ),
         ]);
+        assert_eq!(input.map_labels(), expected);
+    }
+
+    #[test]
+    fn imported_labels_should_not_get_line_attributes() {
+        let input = AddressedProgram::process(Program::parse_assembler(indoc! {"
+            & /0
+            < IMPORT
+        "}.into()).unwrap().1);
+        let expected = LabelMap::from([(
+            Label("IMPORT"),
+            Address {
+                position: 0,
+                relocatable: false,
+                imported: true,
+                ..Default::default()
+            }
+        )]);
         assert_eq!(input.map_labels(), expected);
     }
 }
