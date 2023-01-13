@@ -4,7 +4,7 @@ use nom::bytes::complete::take;
 use utils::hexadecimal;
 
 use super::error;
-use super::Parse;
+use super::{Parse, Position, Relocate};
 
 #[derive(Debug, PartialEq)]
 pub struct MachineAddress {
@@ -15,6 +15,14 @@ pub struct MachineAddress {
 impl MachineAddress {
     pub fn new(properties: MachineAddressProperties, position: u16) -> Self {
         MachineAddress { properties, position }
+    }
+
+}
+
+impl Relocate for MachineAddress {
+    fn relocate(self, base: Position) -> Self{
+        // TODO Add error treatment
+        Self::new(self.properties, self.position + base)
     }
 }
 

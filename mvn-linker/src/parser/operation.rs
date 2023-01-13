@@ -5,7 +5,7 @@ use types;
 use utils::hexadecimal;
 
 use super::error;
-use super::Parse;
+use super::{Parse, Position, Relocate};
 
 impl<'a> Parse<'a> for types::Operation<'a> {
     fn parse_machine_code(input: error::Span<'a>) -> error::LocatedIResult<'a, Self> {
@@ -23,6 +23,22 @@ impl<'a> Parse<'a> for types::Operation<'a> {
         let operand = types::Token::new(operand_position, operand);
 
         Ok((rest, Self::new(instruction, operand)))
+    }
+}
+
+impl Relocate for types::Operation<'_> {
+    fn relocate(self, base: Position) -> Self {
+        let operand = if let types::Operand::Numeric(operand) = self.operand {
+            operand
+        } else {
+            // FIXME Add proper error treatment
+            panic!("operand is not numeric")
+        };
+
+        Self::new(
+            self.instruction,
+            types::Operand::new_numeric(base + operand),
+        )
     }
 }
 
