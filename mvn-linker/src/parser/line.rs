@@ -24,18 +24,24 @@ impl<'a> AddressedLine<'a> {
 
 impl<'a> Parse<'a> for AddressedLine<'a> {
     fn parse_machine_code(input: error::Span<'a>) -> error::LocatedIResult<'a, Self> {
-        let (rest, (address, _, operation, relational_annotation)) = tuple((
+        let (rest, (address, _, operation, comment)) = tuple((
             MachineAddress::parse_machine_code,
             space1,
             types::Operation::parse_machine_code,
             comment_or_space,
         ))(input)?;
-        let relational_annotation = match relational_annotation {
+        let relational_annotation = match comment {
             Some(annotation) => {
-                let (_, line) = types::Line::parse_assembler(annotation)?;
-                Some(line)
+                let annotation = types::Line::parse_assembler(annotation.into());
+                match annotation {
+                    Ok((_, line)) => match line.operation.instruction.value {
+                        types::Instruction::Relational(_)  => Some(line),
+                        _ => None,
+                    },
+                    _ => None,
+                }
             },
-            None => None,
+            _ => None,
         };
         Ok((rest, Self::new(address, operation, relational_annotation)))
     }
@@ -98,6 +104,30 @@ mod tests {
                         Token::new(Position::new(1, 7), Operand::from(0)),
                     ),
                     relational_annotation,
+                )
+            )
+        }
+    }
+
+    #[test]
+    fn non_relational_comments_should_not_lead_to_relational_annotations() {
+        let inputs= vec![
+            ("0000 0000 ; Foo bar"),
+            ("0000 0000 ; K /0"),
+            ("0000 0000 ; K /0 ; Nested comments"),
+            ("0000 0000 ; K ZERO "),
+            ("0000 0000 ; XX FOOBAR"),
+        ];
+        for input in inputs {
+            assert_eq!(
+                AddressedLine::parse_machine_code(input.into()).unwrap().1,
+                AddressedLine::new(
+                    MachineAddress::new(MachineAddressProperties::new(false, false, false), 0),
+                    Operation::new(
+                        Token::new(Position::new(1, 6), Instruction::Normal(NormalMneumonic::Jump)),
+                        Token::new(Position::new(1, 7), Operand::from(0)),
+                    ),
+                    None,
                 )
             )
         }
