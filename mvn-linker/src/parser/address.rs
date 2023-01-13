@@ -59,7 +59,7 @@ impl TryFrom<u8> for MachineAddressProperties {
         let operand_imported = (value & 0b0001) != 0;
 
         if operand_relocatable && operand_imported {
-            Err("Invalid address properties")
+            Err("invalid address properties")
         } else {
             Ok(MachineAddressProperties::new(
                 line_relocatable,
