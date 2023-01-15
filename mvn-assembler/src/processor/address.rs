@@ -129,7 +129,7 @@ impl<'a> AddressedProgram<'a> {
                     if let Operand::Symbolic(label) = &line.operation.operand {
                         label_vector.push((
                             label.clone(),
-                            Address {imported: true, ..Default::default()}
+                            Address {imported: true, position: address.position, ..Default::default()}
                         ));
                     }
                 }
@@ -152,6 +152,7 @@ impl<'a> AddressedLine<'a> {
 #[cfg(test)]
 mod tests {
     use indoc::indoc;
+    use pretty_assertions::assert_eq;
 
     use crate::parser::error::Span;
     use crate::parser::Parse;
@@ -516,7 +517,7 @@ mod tests {
 
     #[test]
     fn imported_labels_should_not_get_line_attributes() {
-        let input = AddressedProgram::process(Program::parse_assembler(indoc! {"
+        let input = AddressedProgram::process(Program::parse(indoc! {"
             & /0
             < IMPORT
         "}.into()).unwrap().1);
