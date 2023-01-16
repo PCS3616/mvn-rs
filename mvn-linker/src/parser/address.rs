@@ -22,7 +22,7 @@ impl MachineAddress {
 impl Relocate for MachineAddress {
     fn relocate(self, base: Position) -> Self{
         // TODO Add error treatment
-        Self::new(self.properties, self.position + base)
+        Self::new(self.properties, base + self.position)
     }
 }
 

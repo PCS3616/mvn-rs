@@ -20,6 +20,14 @@ impl<'a> AddressedLine<'a> {
     pub fn new(address: MachineAddress, operation: types::Operation<'a>, relational_annotation: Option<types::Line<'a>>) -> Self{
         Self { address, operation, relational_annotation }
     }
+
+    // FIXME Modify API to get rid of this method
+    pub fn destruct(self) -> (types::Label<'a>, Position) {
+        let annotation = self.relational_annotation.unwrap();
+        let label: types::Label = annotation.operation.operand.value.try_into().unwrap();
+        let position: Position = self.operation.operand.value.try_into().unwrap();
+        (label, position)
+    }
 }
 
 impl<'a> Parse<'a> for AddressedLine<'a> {

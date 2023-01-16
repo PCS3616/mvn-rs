@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
-use types::{Operand, Operation};
-use types::{Label, Instruction, Token, mneumonic::RelationalMneumonic};
+use types::{Operation};
+use types::{Label, Token};
 
 use crate::parser::Position;
 use crate::parser::{program::AddressedProgram, line::AddressedLine, Relocate};
@@ -8,167 +8,120 @@ use crate::parser::{program::AddressedProgram, line::AddressedLine, Relocate};
 type ImportMap<'a> = BTreeMap<Position, Label<'a>>;
 type ExportMap<'a> = BTreeMap<Label<'a>, Position>;
 
-pub fn process_programs(programs: Vec<AddressedProgram>) -> AddressedProgram {
-    let mut exports: ExportMap = BTreeMap::new();
-    let mut processed_programs: Vec<AddressedProgram> = Vec::new();
-    let mut base = 0u32;
-    for program in programs {
-        let program = process_program(base, program,  &mut exports);
-        base = find_latest_position(&program) + 0x2;
-        processed_programs.push(program);
+struct ProgramProcessor<'a> {
+    program: AddressedProgram<'a>,
+    export_map: ExportMap<'a>,
+}
+
+impl<'a> ProgramProcessor<'a> {
+    fn process(base: Position, program: AddressedProgram<'a>) -> Self {
+        let program = program.relocate(base);
+        let (imports, exports, instructions) = program.partition();
+        let import_map = Self::create_import_map(imports);
+        let export_map = Self::create_export_map(exports);
+        let program = Self::replace_imported_operands_with_labels(instructions, import_map);
+        ProgramProcessor { program, export_map }
     }
 
-    let program = merge_programs(processed_programs);
-    let program = replace_imported_operands_with_positions(program, &exports);
-    program
-}
-
-fn merge_programs(programs: Vec<AddressedProgram>) -> AddressedProgram {
-    let mut lines: Vec<AddressedLine> = Vec::new();
-    for program in programs {
-        lines.extend(program);
-    }
-    AddressedProgram::new(lines)
-}
-
-fn replace_imported_operands_with_positions<'a>(program: AddressedProgram<'a>, exports: &ExportMap<'a>) -> AddressedProgram<'a> {
-    AddressedProgram::new(
-        program
-        .into_iter()
-        .map(|line| replace_imported_operand_line_with_position(line, exports))
-        .collect()
-    )
-}
-
-fn replace_imported_operand_line_with_position<'a>(line: AddressedLine<'a>, exports: &ExportMap<'a>) -> AddressedLine<'a> {
-    if line.address.properties.operand_imported {
-        let operand = replace_imported_operand_with_position(line.operation.operand.value, exports);
-        let operand = Token::new(line.operation.operand.position, operand);
-        let operation = Operation { operand, ..line.operation};
-        AddressedLine { operation, ..line }
-    } else {
-        line
-    }
-}
-
-fn replace_imported_operand_with_position<'a>(operand: Operand, exports: &ExportMap<'a>) -> Operand<'a> {
-    let operand: Label = operand.try_into().unwrap();
-    match exports.get(&operand) {
-        Some(position) => Operand::new_numeric(*position),
-        // TODO Add error treatment
-        None => panic!("imported symbol not found"),
-    }
-}
-
-fn find_latest_position(program: &AddressedProgram) -> Position {
-    let line = program.lines.iter().max_by_key(|line| line.address.position);
-    match line {
-        Some(line) => line.address.position,
-        None => 0,
-    }
-
-}
-
-fn process_program<'a>(base: Position, program: AddressedProgram<'a>, global_exports: &mut ExportMap<'a>) -> AddressedProgram<'a> {
-    let program = resolve_program_physical_addresses(base, program);
-    let (symbol_table, instructions): (Vec<AddressedLine>, Vec<AddressedLine>) = program.into_iter().partition(
-        |line| line.relational_annotation.is_some()
-    );
-    let (imports, exports): (Vec<AddressedLine>, Vec<AddressedLine>) = symbol_table.into_iter().partition(
-        |line| line_is_import(&line.relational_annotation)
-    );
-    let imports = create_import_map(AddressedProgram::new(imports));
-    let instructions = replace_imported_operands_with_labels(
-        AddressedProgram::new(instructions),
-        &imports
-    );
-
-    update_export_map(AddressedProgram::new(exports), global_exports);
-    instructions
-}
-
-fn replace_imported_operands_with_labels<'a>(program: AddressedProgram<'a>, imports: &ImportMap<'a>) -> AddressedProgram<'a> {
-    AddressedProgram::new(
-        program
-        .into_iter()
-        .map(|line| replace_imported_operand_line_with_label(line, imports))
-        .collect()
-    )
-}
-
-fn replace_imported_operand_line_with_label<'a>(line: AddressedLine<'a>, imports: &ImportMap<'a>) -> AddressedLine<'a> {
-    if line.address.properties.operand_imported {
-        let operand = replace_imported_operand_with_label(line.operation.operand.value, imports);
-        let operand = Token::new(line.operation.operand.position, operand);
-        let operation = Operation {operand, ..line.operation};
-        AddressedLine { operation, ..line }
-    } else {
-        line
-    }
-}
-
-fn replace_imported_operand_with_label<'a>(operand: Operand, imports: &ImportMap<'a>) -> Operand<'a> {
-    let operand: u32 =  operand.try_into().unwrap();
-    match imports.get(&operand) {
-        Some(label) => Operand::new_symbolic(label.clone()),
-        // TODO Add error treatment
-        None => panic!("imported symbol not found"),
-    }
-}
-
-// TODO Find a way to reduce code duplication between
-// create map functions
-
-fn update_export_map<'a>(exports: AddressedProgram<'a>, global_exports: &mut ExportMap<'a>) -> () {
-    for line in exports {
-        let annotation = line.relational_annotation.unwrap();
-        let label: Label = annotation.operation.operand.value.try_into().unwrap();
-        let position: u32 = line.operation.operand.value.try_into().unwrap();
-        global_exports.insert(label, position);
-    }
-}
-
-fn create_import_map(imports: AddressedProgram) -> ImportMap {
-    let mut import_map: Vec<(Position, Label)> = Vec::new();
-    for line in imports {
-        let annotation = line.relational_annotation.unwrap();
-        let label: Label = annotation.operation.operand.value.try_into().unwrap();
-        let position: u32 = line.operation.operand.value.try_into().unwrap();
-        import_map.push((position, label));
-    }
-    import_map.into_iter().collect()
-}
-
-fn line_is_import(line: &Option<types::Line>) -> bool {
-    if let Some(line) = line {
-        if let Instruction::Relational(mneumonic) = &line.operation.instruction.value {
-            return mneumonic == &RelationalMneumonic::Import
+    fn create_import_map(imports: Vec<AddressedLine>) -> ImportMap {
+        let mut import_map = ImportMap::new();
+        for line in imports.into_iter() {
+            // TODO Review API to replace `line.destruct()`
+            let (label, position) = line.destruct();
+            import_map.insert(position, label);
         }
+        import_map
     }
-    false
+
+    fn create_export_map(exports: Vec<AddressedLine>) -> ExportMap {
+        let mut export_map = ExportMap::new();
+        for line in exports.into_iter() {
+            // TODO Review API to replace `line.destruct()`
+            let (label, position) = line.destruct();
+            export_map.insert(label, position);
+        }
+        export_map
+    }
+
+    fn replace_imported_operands_with_labels(instructions: Vec<AddressedLine<'a>>, mut import_map: ImportMap<'a>) -> AddressedProgram<'a> {
+        let mut lines:  Vec<AddressedLine> = Vec::new();
+        for line in instructions.into_iter() {
+            let line = if line.address.properties.operand_imported {
+                let operand = line.operation.operand.value.try_into().unwrap();
+                let operation = if let Some(label) = import_map.remove(&operand) {
+                    let operand = Token::new(line.operation.operand.position, label.into());
+                    Operation {
+                        operand,
+                        ..line.operation
+                    }
+                } else {
+                    // TODO Add error treatment
+                    panic!("imported symbol not found")
+                };
+                AddressedLine { operation, ..line }
+            } else {
+                line
+            };
+            lines.push(line);
+        }
+        AddressedProgram::new(lines)
+    }
 }
 
-fn resolve_program_physical_addresses(base: Position, program: AddressedProgram) -> AddressedProgram {
-    AddressedProgram::new(
-        program.into_iter()
-        .map(|line| resolve_line_physical_addresses(base, line))
-        .collect()
-    )
+pub struct ProgramsProcessor<'a> {
+    pub linked_program: AddressedProgram<'a>,
+    pub export_map: ExportMap<'a>,
 }
 
-fn resolve_line_physical_addresses(base: Position, line: AddressedLine) -> AddressedLine {
-    let properties = line.address.properties;
-    let address = if properties.line_relocatable {
-        line.address.relocate(base)
-    } else {
-        line.address
-    };
+impl<'a> ProgramsProcessor<'a> {
+    pub fn new(programs: Vec<AddressedProgram<'a>>) -> Self {
+        Self::process(programs)
+    }
 
-    let operation = if properties.operand_relocatable {
-        line.operation.relocate(base)
-    } else {
-        line.operation
-    };
+    pub fn process(programs: Vec<AddressedProgram<'a>>) -> Self {
+        let mut processed_programs: Vec<AddressedProgram> = Vec::new();
+        let mut base: Position = 0;
+        let mut export_map = ExportMap::new();
+        for program in programs {
+            let processor = ProgramProcessor::process(base, program);
+            base = processor.program.get_last_position() + 0x2;
+            processed_programs.push(processor.program);
+            export_map.extend(processor.export_map)
+        }
+        let merged_program = Self::merge_programs(processed_programs);
+        let linked_program = Self::replace_imported_operands_with_positions(merged_program, &export_map);
+        ProgramsProcessor { linked_program, export_map }
+    }
 
-    AddressedLine::new(address, operation, line.relational_annotation)
+    fn merge_programs(programs: Vec<AddressedProgram<'a>>) -> AddressedProgram<'a> {
+        let mut lines: Vec<AddressedLine> = Vec::new();
+        for program in programs {
+            lines.extend(program);
+        }
+        AddressedProgram::new(lines)
+    }
+
+    fn replace_imported_operands_with_positions(program: AddressedProgram<'a>, export_map: &ExportMap<'a>) -> AddressedProgram<'a> {
+        let mut lines: Vec<AddressedLine> = Vec::new();
+        for line in program {
+            let line = if line.address.properties.operand_imported {
+                let operand: Label = line.operation.operand.value.try_into().unwrap();
+                let operation = if let Some(position) = export_map.get(&operand) {
+                    let operand = Token::new(line.operation.operand.position, (*position).into());
+                    Operation {
+                        operand,
+                        ..line.operation
+                    }
+                } else {
+                    // TODO Add error treatment
+                    panic!("imported symbol not found")
+                };
+                AddressedLine { operation, ..line }
+            } else {
+                line
+            };
+            lines.push(line);
+        }
+        AddressedProgram::new(lines)
+    }
 }
