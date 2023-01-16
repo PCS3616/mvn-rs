@@ -1,16 +1,30 @@
+use nom;
 use nom::character::complete::line_ending;
-use nom::combinator::map;
+use nom::combinator::{map, value, eof};
+use nom::multi::{many0, many_till};
+use nom::sequence::{delimited, pair};
 use types;
 
 use super::error::{LocatedIResult, Span};
 use super::Parse;
-use super::{comment_or_space, separated_list1_opt};
+use super::comment_or_space;
+
+fn ignorable<'a>(input: Span<'a>) -> LocatedIResult<'a, ()> {
+    value((), many0(pair(comment_or_space, line_ending)))(input)
+}
 
 impl<'a> Parse<'a> for types::Program<'a> {
     fn parse(input: Span<'a>) -> LocatedIResult<'a, Self> {
         map(
-            separated_list1_opt(line_ending, types::Line::parse, comment_or_space),
-            |lines| Self::new(lines),
+            many_till(
+                delimited(
+                    ignorable,
+                    types::Line::parse,
+                    ignorable,
+                ),
+                eof,
+            ),
+            |(lines, _)| Self::new(lines)
         )(input)
     }
 }
@@ -25,11 +39,8 @@ mod tests {
     use super::*;
 
     #[test]
-    fn should_returns_code_given_asm() {
-        let input = Span::new(indoc! {"
-            LOOP    LV  /0
-                    JP LOOP
-        "});
+    fn should_returnscode_given_asm() {
+        let input = Span::new(indoc! {"LOOP    LV  /0\nJP LOOP"});
         let expected = Program::new(vec![
             Line::new(
                 Some(Label::new("LOOP")),
@@ -52,6 +63,7 @@ mod tests {
     #[test]
     fn should_returns_code_given_asm_blank_lines() {
         let input = Span::new(indoc! {"
+
 
             LOOP    LV  /0
 

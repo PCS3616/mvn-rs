@@ -1,29 +1,32 @@
-use nom::branch::alt;
 use nom::character::complete::{space0, space1};
-use nom::combinator::map;
-use nom::sequence::{delimited, separated_pair};
+use nom::combinator::opt;
+use nom::sequence::{delimited, tuple, terminated};
 use types;
+use types::Line;
 
 use super::comment_or_space;
 use super::error::{LocatedIResult, Span};
 use super::Parse;
 
-impl<'a> Parse<'a> for types::Line<'a> {
+impl<'a> Parse<'a> for Line<'a> {
     fn parse(input: Span<'a>) -> LocatedIResult<'a, Self> {
         delimited(
             space0,
-            alt((
-                // FIXME Can probably be replaced by alt
-                map(types::Operation::parse, |operation| {
-                    Self::new(None, operation)
-                }),
-                map(
-                    separated_pair(types::Label::parse, space1, types::Operation::parse),
-                    |(label, operation)| Self::new(Some(label), operation),
+            tuple((
+                opt(
+                    terminated(types::Label::parse, space1)
                 ),
+                types::Operation::parse,
             )),
             comment_or_space,
         )(input)
+        .and_then(|(remainder, (label, operation))| Ok((remainder, Self::new(label, operation))))
+        .map_err(
+            |e| match e {
+                nom::Err::Error(e) | nom::Err::Failure(e) => nom::Err::Failure(e),
+                nom::Err::Incomplete(e) => nom::Err::Incomplete(e),
+            }
+        )
     }
 }
 
