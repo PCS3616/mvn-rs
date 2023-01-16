@@ -3,6 +3,7 @@ use std::fmt;
 #[derive(Debug, PartialEq, Clone, Eq, PartialOrd, Ord)]
 pub struct Label<'a>(pub &'a str);
 
+// FIXME Store Span instead of str to locate after parsing
 impl<'a> Label<'a> {
     pub fn new(input: &'a str) -> Self {
         Self(input)
