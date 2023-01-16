@@ -2,8 +2,8 @@ use nom::character::complete::line_ending;
 use nom::combinator::map;
 use nom::multi::separated_list1;
 
+use super::{Parse, Position, Relocate};
 use super::error;
-use super::Parse;
 use super::line::AddressedLine;
 
 #[derive(Debug)]
@@ -14,6 +14,10 @@ pub struct AddressedProgram<'a> {
 impl<'a> AddressedProgram<'a> {
     pub fn new(lines: Vec<AddressedLine<'a>>) -> Self {
         Self { lines }
+    }
+impl Relocate for AddressedProgram<'_> {
+    fn relocate(self, base: Position) -> Self {
+        self.lines.into_iter().map(|line| line.relocate(base)).collect()
     }
 }
 

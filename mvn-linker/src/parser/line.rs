@@ -5,9 +5,9 @@ use assembler::parser::Parse as ParseAssembler;
 use types;
 use utils::comment_or_space;
 
+use super::{Parse, Position, Relocate};
 use super::address::MachineAddress;
 use super::error;
-use super::Parse;
 
 #[derive(Debug, PartialEq)]
 pub struct AddressedLine<'a> {
@@ -44,6 +44,25 @@ impl<'a> Parse<'a> for AddressedLine<'a> {
             _ => None,
         };
         Ok((rest, Self::new(address, operation, relational_annotation)))
+    }
+}
+
+impl Relocate for AddressedLine<'_> {
+    fn relocate(self, base: Position) -> Self {
+        let properties = self.address.properties;
+        let address = if properties.line_relocatable {
+            self.address.relocate(base)
+        } else {
+            self.address
+        };
+
+        let operation = if properties.operand_relocatable {
+            self.operation.relocate(base)
+        } else {
+            self.operation
+        };
+
+        Self::new(address, operation, self.relational_annotation)
     }
 }
 
