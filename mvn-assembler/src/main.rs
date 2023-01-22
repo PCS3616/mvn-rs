@@ -1,13 +1,10 @@
 use indoc::indoc;
 
-use mvn_assembler::parser::error::Span;
-use mvn_assembler::parser::Parse;
-use mvn_assembler::processor::address::AddressedProgram;
+use mvn_assembler::processor::process;
 use mvn_assembler::writer::base::print;
-use types::Program;
 
 fn main() {
-    let program = Program::parse(Span::new(indoc! {"
+    let program = indoc! {"
         < IMPORTED
         > RESERVE
         > TWO
@@ -24,9 +21,7 @@ fn main() {
                 MM  RESERVE
                 HM  /0
         # MAIN
-    "}))
-    .unwrap()
-    .1;
-    let addresses_program = AddressedProgram::process(program);
-    print(&addresses_program);
+    "};
+    let validator_output = process(program);
+    print(program, validator_output);
 }
