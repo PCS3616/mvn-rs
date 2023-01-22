@@ -10,6 +10,12 @@ impl<'a> Label<'a> {
     }
 }
 
+impl<'a> std::convert::From<&'a str> for Label<'a> {
+    fn from(value: &'a str) -> Self {
+        Label(value)
+    }
+}
+
 impl<'a> fmt::Display for Label<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.0)

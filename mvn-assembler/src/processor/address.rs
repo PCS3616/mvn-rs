@@ -119,7 +119,7 @@ impl<'a> AddressedProgram<'a> {
         }
     }
 
-    pub fn map_labels(&'a self) -> LabelMap<'a> {
+    pub fn map_labels(&self) -> LabelMap<'a> {
         let mut label_vector: Vec<(Label, Address)> = Vec::new();
         for AddressedLine { address, line } in &self.lines {
             if let Some(label) = &line.label {
@@ -138,13 +138,13 @@ impl<'a> AddressedProgram<'a> {
         label_vector.into_iter().collect()
     }
 
-    fn new(lines: Vec<AddressedLine<'a>>) -> Self {
+    pub fn new(lines: Vec<AddressedLine<'a>>) -> Self {
         Self { lines }
     }
 }
 
 impl<'a> AddressedLine<'a> {
-    fn new(address: Address, line: types::Line<'a>) -> Self {
+    pub fn new(address: Address, line: types::Line<'a>) -> Self {
         Self { address, line }
     }
 }

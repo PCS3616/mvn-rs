@@ -30,6 +30,12 @@ impl<'a> std::convert::From<Label<'a>> for Operand<'a> {
     }
 }
 
+impl<'a> std::convert::From<&'a str> for Operand<'a> {
+    fn from(value: &'a str) -> Self {
+        Self::Symbolic(value.into())
+    }
+}
+
 impl<'a> fmt::Display for Operand<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let operand = match &self {
