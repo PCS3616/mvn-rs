@@ -92,7 +92,7 @@ mod tests {
     fn should_parse_symbolic() {
         assert_eq!(
             Operand::parse(Span::new("label")).unwrap().1,
-            Operand::new_symbolic(Label::new("label"))
+            Operand::from(Label::from("label"))
         );
         assert!(Operand::parse(Span::new("1label")).is_err());
     }
