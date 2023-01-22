@@ -156,7 +156,8 @@ mod tests {
 
     use crate::parser::error::Span;
     use crate::parser::Parse;
-    use types::{Label, Line, Program};
+    use types::*;
+    use types::mneumonic::*;
 
     use super::*;
 
@@ -176,21 +177,30 @@ mod tests {
                     position: 0,
                     ..Default::default()
                 },
-                line: Line::parse(Span::new("JP /0")).unwrap().1,
+                line: Line::new(None, Operation::new(
+                    Token::new(Position::new(1, 1), Instruction::Normal(NormalMneumonic::Jump)),
+                    Token::new(Position::new(1, 4), Operand::from(0)),
+                )),
             },
             AddressedLine {
                 address: Address {
                     position: 2,
                     ..Default::default()
                 },
-                line: Line::parse(Span::new("K /FFFF")).unwrap().1,
+                line: Line::new(None, Operation::new(
+                    Token::new(Position::new(2, 1), Instruction::Normal(NormalMneumonic::SetConstant)),
+                    Token::new(Position::new(2, 3), Operand::from(0xFFFF)),
+                )),
             },
             AddressedLine {
                 address: Address {
                     position: 4,
                     ..Default::default()
                 },
-                line: Line::parse(Span::new("AD /0001")).unwrap().1,
+                line: Line::new(None, Operation::new(
+                    Token::new(Position::new(4, 1), Instruction::Normal(NormalMneumonic::Add)),
+                    Token::new(Position::new(4, 4), Operand::from(1)),
+                )),
             },
         ]);
         assert_eq!(AddressedProgram::process(input), expected);
@@ -217,7 +227,10 @@ mod tests {
                     exported: true,
                     ..Default::default()
                 },
-                line: Line::parse(Span::new("> EXPORTED")).unwrap().1,
+                line: Line::new(None, Operation::new(
+                    Token::new(Position::new(1, 1), Instruction::Relational(RelationalMneumonic::Export)),
+                    Token::new(Position::new(1, 3), Operand::from("EXPORTED")),
+                )),
             },
             AddressedLine {
                 address: Address {
@@ -225,7 +238,10 @@ mod tests {
                     imported: true,
                     ..Default::default()
                 },
-                line: Line::parse(Span::new("< IMPORTED1")).unwrap().1,
+                line: Line::new(None, Operation::new(
+                    Token::new(Position::new(4, 1), Instruction::Relational(RelationalMneumonic::Import)),
+                    Token::new(Position::new(4, 3), Operand::from("IMPORTED1")),
+                )),
             },
             AddressedLine {
                 address: Address {
@@ -233,7 +249,10 @@ mod tests {
                     imported: true,
                     ..Default::default()
                 },
-                line: Line::parse(Span::new("< IMPORTED2")).unwrap().1,
+                line: Line::new(None, Operation::new(
+                    Token::new(Position::new(5, 1), Instruction::Relational(RelationalMneumonic::Import)),
+                    Token::new(Position::new(5, 3), Operand::from("IMPORTED2")),
+                )),
             },
             AddressedLine {
                 address: Address {
@@ -241,7 +260,10 @@ mod tests {
                     imported: true,
                     ..Default::default()
                 },
-                line: Line::parse(Span::new("< IMPORTED3")).unwrap().1,
+                line: Line::new(None, Operation::new(
+                    Token::new(Position::new(6, 1), Instruction::Relational(RelationalMneumonic::Import)),
+                    Token::new(Position::new(6, 3), Operand::from("IMPORTED3")),
+                )),
             },
             AddressedLine {
                 address: Address {
@@ -250,7 +272,10 @@ mod tests {
                     imported: false,
                     ..Default::default()
                 },
-                line: Line::parse(Span::new("JP /0")).unwrap().1,
+                line: Line::new(None, Operation::new(
+                    Token::new(Position::new(8, 1), Instruction::Normal(NormalMneumonic::Jump)),
+                    Token::new(Position::new(8, 4), Operand::from(0)),
+                )),
             },
         ]);
         assert_eq!(AddressedProgram::process(input), expected);
@@ -271,7 +296,10 @@ mod tests {
                     position: 0,
                     ..Default::default()
                 },
-                line: Line::parse(Span::new("JP /0")).unwrap().1,
+                line: Line::new(None, Operation::new(
+                    Token::new(Position::new(1, 1), Instruction::Normal(NormalMneumonic::Jump)),
+                    Token::new(Position::new(1, 4), Operand::from(0)),
+                )),
             },
             // On the second line, position is meaningless
             AddressedLine {
@@ -279,14 +307,20 @@ mod tests {
                     position: 2,
                     ..Default::default()
                 },
-                line: Line::parse(Span::new("@ /100")).unwrap().1,
+                line: Line::new(None, Operation::new(
+                    Token::new(Position::new(2, 1), Instruction::Positional(PositionalMneumonic::SetAbsoluteOrigin)),
+                    Token::new(Position::new(2, 3), Operand::from(0x100)),
+                )),
             },
             AddressedLine {
                 address: Address {
                     position: 0x100,
                     ..Default::default()
                 },
-                line: Line::parse(Span::new("JP /0")).unwrap().1,
+                line: Line::new(None, Operation::new(
+                    Token::new(Position::new(3, 1), Instruction::Normal(NormalMneumonic::Jump)),
+                    Token::new(Position::new(3, 4), Operand::from(0)),
+                )),
             },
         ]);
         assert_eq!(AddressedProgram::process(input), expected);
@@ -309,7 +343,10 @@ mod tests {
                     position: 0,
                     ..Default::default()
                 },
-                line: Line::parse(Span::new("JP /0")).unwrap().1,
+                line: Line::new(None, Operation::new(
+                    Token::new(Position::new(1, 1), Instruction::Normal(NormalMneumonic::Jump)),
+                    Token::new(Position::new(1, 4), Operand::from(0)),
+                )),
             },
             AddressedLine {
                 address: Address {
@@ -317,7 +354,10 @@ mod tests {
                     relocatable: true,
                     ..Default::default()
                 },
-                line: Line::parse(Span::new("& /100")).unwrap().1,
+                line: Line::new(None, Operation::new(
+                    Token::new(Position::new(2, 1), Instruction::Positional(PositionalMneumonic::SetRelocatableOrigin)),
+                    Token::new(Position::new(2, 3), Operand::from(0x100)),
+                )),
             },
             AddressedLine {
                 address: Address {
@@ -325,7 +365,10 @@ mod tests {
                     relocatable: true,
                     ..Default::default()
                 },
-                line: Line::parse(Span::new("AD /001")).unwrap().1,
+                line: Line::new(None, Operation::new(
+                    Token::new(Position::new(3, 1), Instruction::Normal(NormalMneumonic::Add)),
+                    Token::new(Position::new(3, 4), Operand::from(1)),
+                )),
             },
             AddressedLine {
                 address: Address {
@@ -333,7 +376,10 @@ mod tests {
                     relocatable: false,
                     ..Default::default()
                 },
-                line: Line::parse(Span::new("@ /010")).unwrap().1,
+                line: Line::new(None, Operation::new(
+                    Token::new(Position::new(4, 1), Instruction::Positional(PositionalMneumonic::SetAbsoluteOrigin)),
+                    Token::new(Position::new(4, 3), Operand::from(0x10)),
+                )),
             },
             AddressedLine {
                 address: Address {
@@ -341,7 +387,10 @@ mod tests {
                     relocatable: false,
                     ..Default::default()
                 },
-                line: Line::parse(Span::new("JP /0")).unwrap().1,
+                line: Line::new(None, Operation::new(
+                    Token::new(Position::new(5, 1), Instruction::Normal(NormalMneumonic::Jump)),
+                    Token::new(Position::new(5, 4), Operand::from(0)),
+                )),
             },
         ]);
         assert_eq!(AddressedProgram::process(input), expected);
@@ -364,35 +413,50 @@ mod tests {
                     position: 0x0,
                     ..Default::default()
                 },
-                line: Line::parse(Span::new("JP /0")).unwrap().1,
+                line: Line::new(None, Operation::new(
+                    Token::new(Position::new(1, 1), Instruction::Normal(NormalMneumonic::Jump)),
+                    Token::new(Position::new(1, 4), Operand::from(0)),
+                )),
             },
             AddressedLine {
                 address: Address {
                     position: 0x2,
                     ..Default::default()
                 },
-                line: Line::parse(Span::new("$ /2")).unwrap().1,
+                line: Line::new(None, Operation::new(
+                    Token::new(Position::new(2, 1), Instruction::Positional(PositionalMneumonic::ReserveMemory)),
+                    Token::new(Position::new(2, 3), Operand::from(2)),
+                )),
             },
             AddressedLine {
                 address: Address {
                     position: 0x4,
                     ..Default::default()
                 },
-                line: Line::parse(Span::new("JP /0")).unwrap().1,
+                line: Line::new(None, Operation::new(
+                    Token::new(Position::new(3, 1), Instruction::Normal(NormalMneumonic::Jump)),
+                    Token::new(Position::new(3, 4), Operand::from(0)),
+                )),
             },
             AddressedLine {
                 address: Address {
                     position: 0x6,
                     ..Default::default()
                 },
-                line: Line::parse(Span::new("$ /10")).unwrap().1,
+                line: Line::new(None, Operation::new(
+                    Token::new(Position::new(4, 1), Instruction::Positional(PositionalMneumonic::ReserveMemory)),
+                    Token::new(Position::new(4, 3), Operand::from(0x10)),
+                )),
             },
             AddressedLine {
                 address: Address {
                     position: 0x16,
                     ..Default::default()
                 },
-                line: Line::parse(Span::new("JP /0")).unwrap().1,
+                line: Line::new(None, Operation::new(
+                    Token::new(Position::new(5, 1), Instruction::Normal(NormalMneumonic::Jump)),
+                    Token::new(Position::new(5, 4), Operand::from(0)),
+                )),
             },
         ]);
         assert_eq!(AddressedProgram::process(input), expected);
