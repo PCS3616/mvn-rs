@@ -1,15 +1,15 @@
 use std::fmt;
 
-use crate::{Instruction, Operand};
+use crate::{Instruction, Operand, Token};
 
 #[derive(Debug, PartialEq)]
 pub struct Operation<'a> {
-    pub instruction: Instruction,
-    pub operand: Operand<'a>,
+    pub instruction: Token<Instruction>,
+    pub operand: Token<Operand<'a>>,
 }
 
 impl<'a> Operation<'a> {
-    pub fn new(instruction: Instruction, operand: Operand<'a>) -> Self {
+    pub fn new(instruction: Token<Instruction>, operand: Token<Operand<'a>>) -> Self {
         Self {
             instruction,
             operand,

@@ -1,5 +1,5 @@
 use nom::{character::complete::space1, combinator::map, sequence::separated_pair};
-use types;
+use types::{Instruction, Operand, Token};
 
 use super::error::{LocatedIResult, Span};
 use super::Parse;
@@ -7,7 +7,7 @@ use super::Parse;
 impl<'a> Parse<'a> for types::Operation<'a> {
     fn parse(input: Span<'a>) -> LocatedIResult<'a, Self> {
         map(
-            separated_pair(types::Instruction::parse, space1, types::Operand::parse),
+            separated_pair(Token::<Instruction>::parse, space1, Token::<Operand>::parse),
             |(instruction, operand)| Self::new(instruction, operand),
         )(input)
     }
@@ -16,46 +16,51 @@ impl<'a> Parse<'a> for types::Operation<'a> {
 #[cfg(test)]
 mod tests {
     use pretty_assertions::assert_eq;
+    use types::Position;
     use types::mneumonic::*;
     use types::*;
 
     use super::*;
 
     #[test]
-    fn should_parse_operation() {
+    fn should_parse_operation_with_symbolic_operand() {
         assert_eq!(
             Operation::parse(Span::new("< FUNC")).unwrap().1,
             Operation::new(
-                Instruction::Relational(RelationalMneumonic::Import),
-                Operand::new_symbolic(Label::new("FUNC"))
-            )
-        );
-        assert_eq!(
-            Operation::parse(Span::new("JP  /0")).unwrap().1,
-            Operation::new(
-                Instruction::Normal(NormalMneumonic::Jump),
-                Operand::new_numeric(0)
+                Token::new(Position::new(1, 1), Instruction::Relational(RelationalMneumonic::Import)),
+                Token::new(Position::new(1, 3), Operand::from(Label::from("FUNC"))),
             )
         );
         assert_eq!(
             Operation::parse(Span::new("AD VAR")).unwrap().1,
             Operation::new(
-                Instruction::Normal(NormalMneumonic::Add),
-                Operand::new_symbolic(Label::new("VAR"))
-            )
-        );
-        assert_eq!(
-            Operation::parse(Span::new("K /0")).unwrap().1,
-            Operation::new(
-                Instruction::Normal(NormalMneumonic::SetConstant),
-                Operand::new_numeric(0)
+                Token::new(Position::new(1, 1), Instruction::Normal(NormalMneumonic::Add)),
+                Token::new(Position::new(1, 4), Operand::new_symbolic(Label::new("VAR"))),
             )
         );
         assert_eq!(
             Operation::parse(Span::new("# MAIN")).unwrap().1,
             Operation::new(
-                Instruction::Positional(PositionalMneumonic::SetEnd),
-                Operand::new_symbolic(Label::new("MAIN"))
+                Token::new(Position::new(1, 1), Instruction::Positional(PositionalMneumonic::SetEnd)),
+                Token::new(Position::new(1, 3), Operand::new_symbolic(Label::new("MAIN"))),
+            )
+        );
+    }
+
+    #[test]
+    fn should_parse_operation_with_numeric_operand() {
+        assert_eq!(
+            Operation::parse(Span::new("JP  /0")).unwrap().1,
+            Operation::new(
+                Token::new(Position::new(1, 1), Instruction::Normal(NormalMneumonic::Jump)),
+                Token::new(Position::new(1, 5), Operand::new_numeric(0)),
+            )
+        );
+        assert_eq!(
+            Operation::parse(Span::new("K /0")).unwrap().1,
+            Operation::new(
+                Token::new(Position::new(1, 1), Instruction::Normal(NormalMneumonic::SetConstant)),
+                Token::new(Position::new(1, 3), Operand::new_numeric(0)),
             )
         );
     }

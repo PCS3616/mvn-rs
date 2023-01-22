@@ -1,17 +1,28 @@
 use std::fmt;
 
-use super::Label;
-use super::Operation;
+use super::{Label, Operation, Token, Position};
 
 #[derive(Debug, PartialEq)]
 pub struct Line<'a> {
-    pub label: Option<Label<'a>>,
+    pub label: Option<Token<Label<'a>>>,
     pub operation: Operation<'a>,
 }
 
 impl<'a> Line<'a> {
-    pub fn new(label: Option<Label<'a>>, operation: Operation<'a>) -> Self {
+    pub fn new(label: Option<Token<Label<'a>>>, operation: Operation<'a>) -> Self {
         Self { label, operation }
+    }
+
+    pub fn position(&self) -> Position {
+        let column = if let Some(token) = &self.label {
+            token.position.column
+        } else {
+            self.operation.instruction.position.column
+        };
+        Position::new(
+            self.operation.instruction.position.line,
+            column,
+        )
     }
 }
 

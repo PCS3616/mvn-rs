@@ -38,7 +38,7 @@ impl<'a> AddressedProgram<'a> {
                 instruction,
                 operand,
             } = &line.operation;
-            let address_position = if let Instruction::Relational(mneumonic) = instruction {
+            let address_position = if let Instruction::Relational(mneumonic) = instruction.value {
                 if let RelationalMneumonic::Import = mneumonic {
                     import_counter += 1;
                     import_counter - 1
@@ -54,9 +54,9 @@ impl<'a> AddressedProgram<'a> {
                 ..Default::default()
             };
             let address =
-                AddressedProgram::resolve_address_metadata(instruction, &mut relocatable, address);
+                AddressedProgram::resolve_address_metadata(&instruction.value, &mut relocatable, address);
             addresses.push(address);
-            position = AddressedProgram::resolve_next_position(instruction, operand, position);
+            position = AddressedProgram::resolve_next_position(&instruction.value, &operand.value, position);
         }
 
         AddressedProgram::new(
@@ -123,10 +123,10 @@ impl<'a> AddressedProgram<'a> {
         let mut label_vector: Vec<(Label, Address)> = Vec::new();
         for AddressedLine { address, line } in &self.lines {
             if let Some(label) = &line.label {
-                label_vector.push((label.clone(), address.clone()));
-            } else if let Instruction::Relational(mneumonic) = &line.operation.instruction {
+                label_vector.push((label.value.clone(), address.clone()));
+            } else if let Instruction::Relational(mneumonic) = &line.operation.instruction.value {
                 if let RelationalMneumonic::Import = mneumonic {
-                    if let Operand::Symbolic(label) = &line.operation.operand {
+                    if let Operand::Symbolic(label) = &line.operation.operand.value {
                         label_vector.push((
                             label.clone(),
                             Address {imported: true, position: address.position, ..Default::default()}

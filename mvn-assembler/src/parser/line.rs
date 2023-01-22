@@ -1,8 +1,7 @@
 use nom::character::complete::{space0, space1};
 use nom::combinator::opt;
 use nom::sequence::{delimited, tuple, terminated};
-use types;
-use types::Line;
+use types::{Line, Token, Label, Operation};
 
 use super::comment_or_space;
 use super::error::{LocatedIResult, Span};
@@ -14,9 +13,9 @@ impl<'a> Parse<'a> for Line<'a> {
             space0,
             tuple((
                 opt(
-                    terminated(types::Label::parse, space1)
+                    terminated(Token::<Label>::parse, space1)
                 ),
-                types::Operation::parse,
+                Operation::parse,
             )),
             comment_or_space,
         )(input)
@@ -39,23 +38,65 @@ mod tests {
     use super::*;
 
     #[test]
-    fn should_parse() {
+    fn should_parse_without_label() {
         let inputs_outputs = [
-            ("JP /0", None),
-            ("       JP /0", None),
-            ("LOOP JP /0", Some(Label::new("LOOP"))),
-            ("   LOOP JP /0", Some(Label::new("LOOP"))),
-            ("   LOOP JP /0      ", Some(Label::new("LOOP"))),
-            ("   LOOP JP /0 ; comment", Some(Label::new("LOOP"))),
+            ("JP /0", 1, 4),
+            ("       JP /0", 8, 11),
+            ("       JP /0      ", 8, 11),
         ];
-        for (input, output_label) in inputs_outputs.into_iter() {
+        for (input, instruction_column, operand_column) in inputs_outputs.into_iter() {
             assert_eq!(
-                Line::parse(Span::new(input)).unwrap().1,
+                Line::parse(input.into()).unwrap().1,
                 Line::new(
-                    output_label,
+                    None,
                     Operation::new(
-                        Instruction::Normal(NormalMneumonic::Jump),
-                        Operand::new_numeric(0)
+                        Token::new(Position::new(1, instruction_column), Instruction::Normal(NormalMneumonic::Jump)),
+                        Token::new(Position::new(1, operand_column), Operand::new_numeric(0)),
+                    )
+                )
+            );
+        }
+    }
+
+    #[test]
+    fn should_parse_with_label() {
+        let inputs_outputs = [
+            ("LOOP JP /0", 1, 6, 9),
+            ("   LOOP JP /0", 4, 9, 12),
+            ("   LOOP JP /0      ", 4, 9, 12),
+        ];
+        for (input, label_column, instruction_column, operand_column) in inputs_outputs.into_iter() {
+            assert_eq!(
+                Line::parse(input.into()).unwrap().1,
+                Line::new(
+                    Some(Token::new(Position::new(1, label_column), "LOOP".into())),
+                    Operation::new(
+                        Token::new(Position::new(1, instruction_column), Instruction::Normal(NormalMneumonic::Jump)),
+                        Token::new(Position::new(1, operand_column), Operand::new_numeric(0)),
+                    )
+                )
+            );
+        }
+    }
+
+    #[test]
+    fn should_parse_with_comment() {
+        let inputs_outputs = [
+            ("JP /0 ; Foo", None, 1, 4),
+            ("LOOP JP /0 ; Bar", Some(1), 6, 9),
+            ("   LOOP JP /0 ; Foobar", Some(4), 9, 12),
+        ];
+        for (input, label_column, instruction_column, operand_column) in inputs_outputs.into_iter() {
+            let label = label_column.map(
+                |column| Token::new(Position::new(1, column), "LOOP".into()),
+            );
+            assert_eq!(
+                Line::parse(input.into()).unwrap().1,
+                Line::new(
+                    label,
+                    Operation::new(
+                        Token::new(Position::new(1, instruction_column), Instruction::Normal(NormalMneumonic::Jump)),
+                        Token::new(Position::new(1, operand_column), Operand::new_numeric(0)),
                     )
                 )
             );

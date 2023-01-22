@@ -40,20 +40,20 @@ mod tests {
 
     #[test]
     fn should_returnscode_given_asm() {
-        let input = Span::new(indoc! {"LOOP    LV  /0\nJP LOOP"});
+        let input = indoc! {"LOOP    LV  /0\nJP LOOP"}.into();
         let expected = Program::new(vec![
             Line::new(
-                Some(Label::new("LOOP")),
+                Some(Token::new(Position::new(1, 1), Label::new("LOOP"))),
                 Operation::new(
-                    Instruction::Normal(NormalMneumonic::LoadValue),
-                    Operand::new_numeric(0),
+                    Token::new(Position::new(1, 9), Instruction::Normal(NormalMneumonic::LoadValue)),
+                    Token::new(Position::new(1, 13), Operand::new_numeric(0)),
                 ),
             ),
             Line::new(
                 None,
                 Operation::new(
-                    Instruction::Normal(NormalMneumonic::Jump),
-                    Operand::new_symbolic(Label::new("LOOP")),
+                    Token::new(Position::new(2, 1), Instruction::Normal(NormalMneumonic::Jump)),
+                    Token::new(Position::new(2, 4), Operand::new_symbolic(Label::new("LOOP"))),
                 ),
             ),
         ]);
@@ -73,17 +73,17 @@ mod tests {
         "});
         let expected = Program::new(vec![
             Line::new(
-                Some(Label::new("LOOP")),
+                Some(Token::new(Position::new(3, 1), Label::new("LOOP"))),
                 Operation::new(
-                    Instruction::Normal(NormalMneumonic::LoadValue),
-                    Operand::new_numeric(0),
+                    Token::new(Position::new(3, 9), Instruction::Normal(NormalMneumonic::LoadValue)),
+                    Token::new(Position::new(3, 13), Operand::new_numeric(0)),
                 ),
             ),
             Line::new(
                 None,
                 Operation::new(
-                    Instruction::Normal(NormalMneumonic::Jump),
-                    Operand::new_symbolic(Label::new("LOOP")),
+                    Token::new(Position::new(6, 9), Instruction::Normal(NormalMneumonic::Jump)),
+                    Token::new(Position::new(6, 12), Operand::new_symbolic(Label::new("LOOP"))),
                 ),
             ),
         ]);
