@@ -15,8 +15,8 @@ pub type LocatedIResult<'a, O> = nom::IResult<Span<'a>, O, MvnParseError<'a>>;
 
 #[derive(Debug, PartialEq)]
 pub struct MvnParseError<'a> {
-    span: Span<'a>,
-    message: Option<String>,
+    pub span: Span<'a>,
+    pub message: Option<String>,
 }
 
 impl<'a> MvnParseError<'a> {
