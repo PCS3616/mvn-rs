@@ -3,11 +3,11 @@ use annotate_snippets::{
     display_list::{DisplayList, FormatOptions},
     snippet::{Annotation, AnnotationType, Slice, Snippet, SourceAnnotation},
 };
-use nom;
+
+use types::{Instruction, Line, Operand};
 
 use crate::processor::address::{Address, AddressedLine, AddressedProgram, LabelMap};
-use types::{Instruction, Line, Operand};
-use utils::error::MvnParseError;
+use crate::processor::MvnReportError;
 
 // pub fn write(
 //     validator_output: Result<(AddressedProgram, LabelMap), MvnParseError>,
@@ -16,29 +16,27 @@ use utils::error::MvnParseError;
 // ) {}
 pub fn print(
     program: &str,
-    validator_output: Result<(AddressedProgram, LabelMap), nom::Err<MvnParseError>>,
+    validator_output: Result<(AddressedProgram, LabelMap), MvnReportError>,
 ) {
     match validator_output {
         Ok((program, label_map)) => print_program(program, label_map),
-        Err(e) => match e {
-            nom::Err::Error(error) | nom::Err::Failure(error) => print_error(program, error),
-            nom::Err::Incomplete(e) => panic!("Unhandled error `{e:?}` occured"),
-        },
+        Err(error) => print_error(program, error),
     }
 }
 
-fn print_error(program: &str, error: MvnParseError) {
-    let line: usize = (error.line() - 1).try_into().unwrap();
+fn print_error(program: &str, error: MvnReportError) {
+    let line: usize = (error.position.line - 1).try_into().unwrap();
     let source = program
         .lines()
         .nth(line)
         .unwrap();
-    let column = error.span().get_column();
-    let span_length = error.span().len();
+    let column = error.position.column;
+    // let span_length = error.span().len();
+    let message = error.message.unwrap_or_default();
 
     let snippet = Snippet {
         title: Some(Annotation {
-            label: Some("error while parsing input file"),
+            label: Some("error while handling input file"),
             id: None,
             annotation_type: AnnotationType::Error,
         }),
@@ -46,13 +44,13 @@ fn print_error(program: &str, error: MvnParseError) {
         slices: vec![Slice {
             source: source,
             line_start: line,
-            origin: Some("examples/footer.rs"),
+            origin: Some("examples/foo.rs"),
             fold: false,
             annotations: vec![
                 SourceAnnotation {
-                    label: "invalid mneumonic",
+                    label: &message,
                     annotation_type: AnnotationType::Error,
-                    range: (column, column + 2),
+                    range: (column, column + 1), // TODO Use proper span length
                 },
             ],
         }],
@@ -63,7 +61,6 @@ fn print_error(program: &str, error: MvnParseError) {
     };
     let dl = DisplayList::from(snippet);
     println!("{}", dl);
-    eprintln!("{error:?}");
 }
 
 // fn write_program(program: AddressedProgram, label_map: LabelMap, output: impl fmt::Write) {
@@ -76,13 +73,13 @@ fn print_program(program: AddressedProgram, label_map: LabelMap) {
             operation,
         } = line;
 
-        let instruction_value: u8 = match operation.instruction {
+        let instruction_value: u8 = match operation.instruction.value {
             Instruction::Positional(_) => continue,
             Instruction::Normal(mneumonic) => mneumonic.into(),
             _ => 0,
         };
 
-        let (operand_address, operand_value) = match &operation.operand {
+        let (operand_address, operand_value) = match &operation.operand.value {
             Operand::Symbolic(label) => {
                 let operand_address = label_map.get(&label).unwrap();
                 (operand_address, operand_address.position)
@@ -97,8 +94,8 @@ fn print_program(program: AddressedProgram, label_map: LabelMap) {
         let operation_address = ((nibble_value as u32) << 12) + address.position;
 
         print!("{:04X} {:04X}", operation_address, operation_value);
-        if let Instruction::Relational(relational_mneumonic) = &operation.instruction {
-            if let Operand::Symbolic(relational_label) = &operation.operand {
+        if let Instruction::Relational(relational_mneumonic) = &operation.instruction.value {
+            if let Operand::Symbolic(relational_label) = &operation.operand.value {
                 print!(" ; {} {}", relational_mneumonic, relational_label.0);
             }
         }
