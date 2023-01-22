@@ -1,16 +1,15 @@
 pub mod error;
 
-use error::{MvnParseError, Span};
+use error::{Span, LocatedIResult};
 use nom::character::complete::{hex_digit1, satisfy};
 use nom::combinator::{map, recognize};
 use nom::multi::many_m_n;
-use nom::IResult;
 use num_traits::Num;
 
 /*
  * Adapted from https://github.com/Geal/nom/blob/main/doc/nom_recipes.md#hexadecimal
  */
-pub fn hexadecimal<T: Num>(input: Span) -> IResult<Span<'_>, T, MvnParseError> {
+pub fn hexadecimal<T: Num>(input: Span) -> LocatedIResult<'_, T> {
     map(
         recognize(hex_digit1),
         /* Unwrapping is not allowed since `<T as Num>::FromStrRadixErr`
@@ -22,7 +21,7 @@ pub fn hexadecimal<T: Num>(input: Span) -> IResult<Span<'_>, T, MvnParseError> {
     )(input)
 }
 
-pub fn ascii(input: Span) -> IResult<Span<'_>, u32, MvnParseError> {
+pub fn ascii(input: Span) -> LocatedIResult<'_, u32> {
     let (rest, bytes) = map(
         // ASCII immediates may contain at most two bytes
         // `many_m_n` ensures there are either 1 or 2 bytes
