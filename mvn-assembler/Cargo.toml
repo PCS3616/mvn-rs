@@ -11,6 +11,7 @@ indoc = "1.0.6"
 nom = "7.1.1"
 dotenv_codegen = "0.15.0"
 utils = { path = "../mvn-utils", package = "mvn-utils" }
+annotate-snippets = "0.9.1"
 
 [dev-dependencies]
 pretty_assertions = "1.2.1"
