@@ -7,10 +7,21 @@ pub mod operation;
 pub mod program;
 
 use nom::IResult;
+use nom_locate::position;
 pub use utils::error;
 
 pub trait Parse<'a>: Sized {
     fn parse(input: error::Span<'a>) -> error::LocatedIResult<'a, Self>;
+}
+
+impl<'a, T: Parse<'a>> Parse<'a> for types::Token<T> {
+    fn parse(input: error::Span<'a>) -> error::LocatedIResult<'a, Self> {
+        let (input, position) = position(input)?;
+        let position = position.into();
+        let (rest, value) = T::parse(input)?;
+        let token = types::Token { position, value };
+        Ok((rest, token))
+    }
 }
 
 use nom::branch::alt;
