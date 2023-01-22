@@ -18,7 +18,7 @@ pub struct AddressedLine<'a> {
 
 #[derive(Clone, Debug, PartialEq, Default)]
 pub struct Address {
-    pub position: u16,
+    pub position: u32,
     pub relocatable: bool,
     pub imported: bool,
     pub exported: bool,
@@ -28,8 +28,8 @@ pub type LabelMap<'a> = BTreeMap<Label<'a>, Address>;
 
 impl<'a> AddressedProgram<'a> {
     pub fn process(program: Program<'a>) -> AddressedProgram<'a> {
-        let mut position: u16 = 0;
-        let mut import_counter: u16 = 0;
+        let mut position = 0;
+        let mut import_counter = 0;
         let mut addresses: Vec<Address> = Vec::new();
         let mut relocatable = false;
 
@@ -38,7 +38,7 @@ impl<'a> AddressedProgram<'a> {
                 instruction,
                 operand,
             } = &line.operation;
-            let address_position: u16 = if let Instruction::Relational(mneumonic) = instruction {
+            let address_position = if let Instruction::Relational(mneumonic) = instruction {
                 if let RelationalMneumonic::Import = mneumonic {
                     import_counter += 1;
                     import_counter - 1
@@ -98,8 +98,8 @@ impl<'a> AddressedProgram<'a> {
     fn resolve_next_position(
         instruction: &Instruction,
         operand: &Operand,
-        current_position: u16,
-    ) -> u16 {
+        current_position: u32,
+    ) -> u32 {
         match instruction {
             Instruction::Normal(_) => current_position + 2,
             Instruction::Positional(mneumonic) => {

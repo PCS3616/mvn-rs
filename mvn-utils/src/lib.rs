@@ -22,7 +22,7 @@ pub fn hexadecimal<T: Num>(input: Span) -> IResult<Span<'_>, T, MvnParseError> {
     )(input)
 }
 
-pub fn ascii(input: Span) -> IResult<Span<'_>, u16, MvnParseError> {
+pub fn ascii(input: Span) -> IResult<Span<'_>, u32, MvnParseError> {
     let (rest, bytes) = map(
         // ASCII immediates may contain at most two bytes
         // `many_m_n` ensures there are either 1 or 2 bytes
@@ -31,9 +31,9 @@ pub fn ascii(input: Span) -> IResult<Span<'_>, u16, MvnParseError> {
     )(input)?;
     let bytes = bytes.iter().map(|c| *c as u8);
 
-    let mut result = 0u16;
+    let mut result = 0;
     for (i, byte) in bytes.rev().enumerate() {
-        result += (byte as u16) << 8 * i;
+        result += (byte as u32) << (8 * i);
     }
     Ok((rest, result))
 }

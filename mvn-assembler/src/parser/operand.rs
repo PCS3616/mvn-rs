@@ -17,11 +17,11 @@ impl<'a> Parse<'a> for types::Operand<'a> {
                 // Numeric: hexadecimal
                 preceded(tag("/"), hexadecimal),
                 // Numeric: decimal
-                preceded(tag("="), complete::u16),
+                preceded(tag("="), complete::u32),
                 // ASCII
                 preceded(tag("\""), ascii),
             )),
-            |value: u16| Self::new_numeric(value),
+            |value: u32| Self::new_numeric(value),
         )(input);
         let numeric_operand =
             error_or!(numeric_operand, input, "could not parse numeric immediate");

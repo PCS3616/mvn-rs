@@ -5,11 +5,11 @@ use crate::Label;
 #[derive(Debug, PartialEq)]
 pub enum Operand<'a> {
     Symbolic(Label<'a>),
-    Numeric(u16),
+    Numeric(u32),
 }
 
 impl<'a> Operand<'a> {
-    pub fn new_numeric(value: u16) -> Self {
+    pub fn new_numeric(value: u32) -> Self {
         Self::Numeric(value)
     }
 
@@ -18,8 +18,8 @@ impl<'a> Operand<'a> {
     }
 }
 
-impl<'a> std::convert::From<u16> for Operand<'a> {
-    fn from(value: u16) -> Self {
+impl<'a> std::convert::From<u32> for Operand<'a> {
+    fn from(value: u32) -> Self {
         Self::Numeric(value)
     }
 }
