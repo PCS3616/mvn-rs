@@ -1,34 +1,15 @@
-use std::convert::{TryFrom, From};
-
 use nom::bytes::complete::take;
 use utils::hexadecimal;
 
+use crate::types::{MachineAddress, MachineAddressProperties, AddressPosition};
+
 use super::error;
-use super::{Parse, Position, Relocate};
-
-#[derive(Debug, PartialEq)]
-pub struct MachineAddress {
-    pub properties: MachineAddressProperties,
-    pub position: u32,
-}
-
-impl MachineAddress {
-    pub fn new(properties: MachineAddressProperties, position: u32) -> Self {
-        MachineAddress { properties, position }
-    }
-
-}
+use super::{Parse, Relocate};
 
 impl Relocate for MachineAddress {
-    fn relocate(self, base: Position) -> Self{
+    fn relocate(self, base: AddressPosition) -> Self{
         // TODO Add error treatment
         Self::new(self.properties, base + self.position)
-    }
-}
-
-impl From<MachineAddress> for u32 {
-    fn from(value: MachineAddress) -> Self {
-        value.position
     }
 }
 
@@ -38,43 +19,6 @@ impl Parse<'_> for MachineAddress {
         let (_, properties) = MachineAddressProperties::parse_machine_code(properties)?;
         let (rest, position) = hexadecimal::<u32>(position)?;
         Ok((rest, MachineAddress::new(properties, position)))
-    }
-}
-
-#[derive(Copy, Clone, Debug, PartialEq)]
-pub struct MachineAddressProperties {
-    pub line_relocatable: bool,
-    pub operand_relocatable: bool,
-    pub operand_imported: bool,
-}
-
-
-impl MachineAddressProperties {
-    pub fn new(line_relocatable: bool, operand_relocatable: bool, operand_imported: bool) -> Self {
-            MachineAddressProperties {
-                line_relocatable,
-                operand_relocatable,
-                operand_imported,
-            }
-    }
-}
-
-impl TryFrom<u8> for MachineAddressProperties {
-    type Error = &'static str;
-    fn try_from(value: u8) -> Result<Self, Self::Error> {
-        let line_relocatable = (value & 0b0100) != 0;
-        let operand_relocatable = (value & 0b0010) != 0;
-        let operand_imported = (value & 0b0001) != 0;
-
-        if operand_relocatable && operand_imported {
-            Err("invalid address properties")
-        } else {
-            Ok(MachineAddressProperties::new(
-                line_relocatable,
-                operand_relocatable,
-                operand_imported,
-            ))
-        }
     }
 }
 

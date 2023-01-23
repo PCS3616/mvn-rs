@@ -4,10 +4,10 @@ use annotate_snippets::{
     snippet::{Annotation, AnnotationType, Slice, Snippet, SourceAnnotation},
 };
 
-use types::{Instruction, Line, Operand};
+use utils::error::MvnReportError;
 
+use crate::types::{Instruction, Line, Operand};
 use crate::processor::address::{Address, AddressedLine, AddressedProgram, LabelMap};
-use crate::processor::MvnReportError;
 
 // pub fn write(
 //     validator_output: Result<(AddressedProgram, LabelMap), MvnParseError>,

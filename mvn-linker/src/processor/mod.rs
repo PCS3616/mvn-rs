@@ -1,12 +1,12 @@
 use std::collections::BTreeMap;
-use types::{Operation};
-use types::{Label, Token};
 
-use crate::parser::Position;
-use crate::parser::{program::AddressedProgram, line::AddressedLine, Relocate};
+use utils::types::Token;
 
-type ImportMap<'a> = BTreeMap<Position, Label<'a>>;
-type ExportMap<'a> = BTreeMap<Label<'a>, Position>;
+use crate::types::{Label, Operation, AddressPosition, AddressedProgram, AddressedLine};
+use crate::parser::Relocate;
+
+type ImportMap<'a> = BTreeMap<AddressPosition, Label<'a>>;
+type ExportMap<'a> = BTreeMap<Label<'a>, AddressPosition>;
 
 struct ProgramProcessor<'a> {
     program: AddressedProgram<'a>,
@@ -14,7 +14,7 @@ struct ProgramProcessor<'a> {
 }
 
 impl<'a> ProgramProcessor<'a> {
-    fn process(base: Position, program: AddressedProgram<'a>) -> Self {
+    fn process(base: AddressPosition, program: AddressedProgram<'a>) -> Self {
         let program = program.relocate(base);
         let (imports, exports, instructions) = program.partition();
         let import_map = Self::create_import_map(imports);
@@ -80,7 +80,7 @@ impl<'a> ProgramsProcessor<'a> {
 
     pub fn process(programs: Vec<AddressedProgram<'a>>) -> Self {
         let mut processed_programs: Vec<AddressedProgram> = Vec::new();
-        let mut base: Position = 0;
+        let mut base: AddressPosition = 0;
         let mut export_map = ExportMap::new();
         for program in programs {
             let processor = ProgramProcessor::process(base, program);

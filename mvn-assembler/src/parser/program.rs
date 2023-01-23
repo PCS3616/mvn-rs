@@ -1,25 +1,21 @@
 use nom;
-use nom::character::complete::line_ending;
-use nom::combinator::{map, value, eof};
-use nom::multi::{many0, many_till};
-use nom::sequence::{delimited, pair};
-use types;
-use utils::comment_or_space;
+use nom::combinator::{map, eof};
+use nom::multi::many_till;
+use nom::sequence::delimited;
+use crate::types::{Program, Line};
+use utils::ignorable;
 
 use super::error::{LocatedIResult, Span};
 use super::Parse;
 
-fn ignorable<'a>(input: Span<'a>) -> LocatedIResult<'a, ()> {
-    value((), many0(pair(comment_or_space, line_ending)))(input)
-}
 
-impl<'a> Parse<'a> for types::Program<'a> {
+impl<'a> Parse<'a> for Program<'a> {
     fn parse_assembler(input: Span<'a>) -> LocatedIResult<'a, Self> {
         map(
             many_till(
                 delimited(
                     ignorable,
-                    types::Line::parse_assembler,
+                    Line::parse_assembler,
                     ignorable,
                 ),
                 eof,
@@ -33,9 +29,8 @@ impl<'a> Parse<'a> for types::Program<'a> {
 mod tests {
     use indoc::indoc;
     use pretty_assertions::assert_eq;
-    use types::mneumonic::*;
-    use types::*;
-
+    use utils::types::*;
+    use crate::types::{*, mneumonic::*};
     use super::*;
 
     #[test]

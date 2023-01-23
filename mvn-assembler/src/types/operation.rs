@@ -1,6 +1,8 @@
 use std::fmt;
 
-use crate::{Instruction, Operand, Token};
+use utils::types::Token;
+
+use super::{Instruction, Operand};
 
 #[derive(Debug, PartialEq)]
 pub struct Operation<'a> {

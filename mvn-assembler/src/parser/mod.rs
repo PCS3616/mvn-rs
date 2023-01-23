@@ -9,17 +9,18 @@ pub mod program;
 use nom::IResult;
 use nom_locate::position;
 pub use utils::error;
+use utils::types::Token;
 
 pub trait Parse<'a>: Sized {
     fn parse_assembler(input: error::Span<'a>) -> error::LocatedIResult<'a, Self>;
 }
 
-impl<'a, T: Parse<'a>> Parse<'a> for types::Token<T> {
+impl<'a, T: Parse<'a>> Parse<'a> for Token<T> {
     fn parse_assembler(input: error::Span<'a>) -> error::LocatedIResult<'a, Self> {
         let (input, position) = position(input)?;
         let position = position.into();
         let (rest, value) = T::parse_assembler(input)?;
-        let token = types::Token { position, value };
+        let token = Token { position, value };
         Ok((rest, token))
     }
 }

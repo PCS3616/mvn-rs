@@ -1,10 +1,11 @@
 use nom::{character::complete::space1, combinator::map, sequence::separated_pair};
-use types::{Instruction, Operand, Token};
+use utils::types::Token;
 
+use crate::types::{Instruction, Operand, Operation};
 use super::error::{LocatedIResult, Span};
 use super::Parse;
 
-impl<'a> Parse<'a> for types::Operation<'a> {
+impl<'a> Parse<'a> for Operation<'a> {
     fn parse_assembler(input: Span<'a>) -> LocatedIResult<'a, Self> {
         map(
             separated_pair(Token::<Instruction>::parse_assembler, space1, Token::<Operand>::parse_assembler),
@@ -16,9 +17,8 @@ impl<'a> Parse<'a> for types::Operation<'a> {
 #[cfg(test)]
 mod tests {
     use pretty_assertions::assert_eq;
-    use types::Position;
-    use types::mneumonic::*;
-    use types::*;
+    use utils::types::Position;
+    use crate::types::{*, mneumonic::*};
 
     use super::*;
 

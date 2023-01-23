@@ -6,7 +6,6 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-types = { path = "../mvn-types", package = "mvn-types" }
 indoc = "1.0.6"
 nom = "7.1.1"
 nom_locate = "4.0.0"

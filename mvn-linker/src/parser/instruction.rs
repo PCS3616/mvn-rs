@@ -3,13 +3,12 @@ use nom::bytes::complete::tag;
 use nom::branch::alt;
 use nom::combinator::value;
 
-use types;
-use types::mneumonic::NormalMneumonic;
+use crate::types::{Instruction, mneumonic::NormalMneumonic};
 
 use super::error;
 use super::Parse;
 
-impl<'a> Parse<'a> for types::Instruction {
+impl<'a> Parse<'a> for Instruction {
     fn parse_machine_code(input: error::Span<'a>) -> error::LocatedIResult<'a, Self> {
         let (rest, mneumonic) = alt((
             value(NormalMneumonic::Jump, tag(dotenv!("VALUE_JUMP"))),
@@ -36,7 +35,6 @@ impl<'a> Parse<'a> for types::Instruction {
 #[cfg(test)]
 mod tests {
     use pretty_assertions::assert_eq;
-    use types::{Instruction, mneumonic::NormalMneumonic};
     use super::*;
 
     #[test]

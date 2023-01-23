@@ -2,34 +2,10 @@ pub(crate) mod address;
 mod validator;
 
 use nom;
-use types::Program;
-use utils::error::MvnParseError;
 
-use std::convert::From;
+use utils::error::MvnReportError;
 
-use types::Position;
-
-#[derive(Debug)]
-pub struct MvnReportError {
-    pub position: Position,
-    pub message: Option<String>,
-}
-
-impl From<MvnParseError<'_>> for MvnReportError {
-    fn from(value: MvnParseError) -> Self {
-        Self {
-            position: value.span.into(),
-            message: value.message,
-        }
-    }
-}
-
-impl MvnReportError {
-    fn new(position: Position, message: Option<String>) -> Self {
-        Self { position, message }
-    }
-}
-
+use crate::types::Program;
 use crate::parser::Parse;
 use crate::processor::address::{AddressedProgram, LabelMap};
 

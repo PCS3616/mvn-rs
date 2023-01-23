@@ -1,9 +1,35 @@
+use std::convert::From;
+
 use nom;
 use nom_locate::LocatedSpan;
+
+use super::types::Position;
 
 pub type Span<'a> = LocatedSpan<&'a str>;
 pub type LocatedError<'a> = nom::error::Error<Span<'a>>;
 pub type LocatedIResult<'a, O> = nom::IResult<Span<'a>, O, MvnParseError<'a>>;
+
+
+#[derive(Debug)]
+pub struct MvnReportError {
+    pub position: Position,
+    pub message: Option<String>,
+}
+
+impl From<MvnParseError<'_>> for MvnReportError {
+    fn from(value: MvnParseError) -> Self {
+        Self {
+            position: value.span.into(),
+            message: value.message,
+        }
+    }
+}
+
+impl MvnReportError {
+    pub fn new(position: Position, message: Option<String>) -> Self {
+        Self { position, message }
+    }
+}
 
 /*
  * Custom error type allows for domain-specific error messages,

@@ -1,7 +1,7 @@
 use indoc::indoc;
 
 use mvn_linker::parser::Parse;
-use mvn_linker::parser::program::AddressedProgram;
+use mvn_linker::types::AddressedProgram;
 use mvn_linker::processor::ProgramsProcessor;
 
 fn main() {

@@ -1,13 +1,14 @@
 use nom::combinator::{map, not};
 use utils::error_or;
 
+use crate::types::{Label, Instruction};
 use super::error::{LocatedIResult, Span};
 use super::identifier;
 use super::Parse;
 
-impl<'a> Parse<'a> for types::Label<'a> {
+impl<'a> Parse<'a> for Label<'a> {
     fn parse_assembler(input: Span<'a>) -> LocatedIResult<'a, Self> {
-        let label = not(types::Instruction::parse_assembler)(input).and_then(
+        let label = not(Instruction::parse_assembler)(input).and_then(
             |(input, _)| map(identifier, |out: &str| Self::new(out))(input)
         );
         error_or!(
@@ -21,9 +22,7 @@ impl<'a> Parse<'a> for types::Label<'a> {
 #[cfg(test)]
 mod tests {
     use pretty_assertions::assert_eq;
-    use types::Label;
-    use types::mneumonic::*;
-
+    use crate::types::mneumonic::*;
     use super::*;
 
     fn normal_mneumonics() -> [NormalMneumonic; 17] {

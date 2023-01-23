@@ -2,48 +2,27 @@ use nom::character::complete::space1;
 use nom::sequence::tuple;
 
 use assembler::parser::Parse as ParseAssembler;
-use types;
 use utils::comment_or_space;
 
-use super::{Parse, Position, Relocate};
-use super::address::MachineAddress;
+use crate::types::{MachineAddress, AddressPosition, AddressedLine};
+
+use super::{Parse, Relocate};
 use super::error;
-
-#[derive(Debug, PartialEq)]
-pub struct AddressedLine<'a> {
-    pub address: MachineAddress,
-    pub operation: types::Operation<'a>,
-    pub relational_annotation: Option<types::Line<'a>>,
-}
-
-impl<'a> AddressedLine<'a> {
-    pub fn new(address: MachineAddress, operation: types::Operation<'a>, relational_annotation: Option<types::Line<'a>>) -> Self{
-        Self { address, operation, relational_annotation }
-    }
-
-    // FIXME Modify API to get rid of this method
-    pub fn destruct(self) -> (types::Label<'a>, Position) {
-        let annotation = self.relational_annotation.unwrap();
-        let label: types::Label = annotation.operation.operand.value.try_into().unwrap();
-        let position: Position = self.operation.operand.value.try_into().unwrap();
-        (label, position)
-    }
-}
 
 impl<'a> Parse<'a> for AddressedLine<'a> {
     fn parse_machine_code(input: error::Span<'a>) -> error::LocatedIResult<'a, Self> {
         let (rest, (address, _, operation, comment)) = tuple((
             MachineAddress::parse_machine_code,
             space1,
-            types::Operation::parse_machine_code,
+            assembler::types::Operation::parse_machine_code,
             comment_or_space,
         ))(input)?;
         let relational_annotation = match comment {
             Some(annotation) => {
-                let annotation = types::Line::parse_assembler(annotation);
+                let annotation = assembler::types::Line::parse_assembler(annotation);
                 match annotation {
                     Ok((_, line)) => match line.operation.instruction.value {
-                        types::Instruction::Relational(_)  => Some(line),
+                        assembler::types::Instruction::Relational(_)  => Some(line),
                         _ => None,
                     },
                     _ => None,
@@ -56,7 +35,7 @@ impl<'a> Parse<'a> for AddressedLine<'a> {
 }
 
 impl Relocate for AddressedLine<'_> {
-    fn relocate(self, base: Position) -> Self {
+    fn relocate(self, base: AddressPosition) -> Self {
         let properties = self.address.properties;
         let address = if properties.line_relocatable {
             self.address.relocate(base)
@@ -78,9 +57,10 @@ impl Relocate for AddressedLine<'_> {
 #[cfg(test)]
 mod tests {
     use pretty_assertions::assert_eq;
-    use types::{Operation, Line, Token, Position, Instruction, Operand, mneumonic::{NormalMneumonic, RelationalMneumonic}};
+    use utils::types::*;
+    use assembler::types::{*, mneumonic::*};
     use super::*;
-    use crate::parser::address::{MachineAddress, MachineAddressProperties};
+    use crate::types::{MachineAddress, MachineAddressProperties};
 
     #[test]
     fn should_parse_lines_with_varying_spacing() {

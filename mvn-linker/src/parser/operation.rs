@@ -1,34 +1,34 @@
 use nom::bytes::complete::take;
 use nom_locate::position;
 
-use types;
-use utils::hexadecimal;
+use crate::types::{Instruction, Operand, Operation, AddressPosition};
+use utils::{hexadecimal, types::*};
 
 use super::error;
-use super::{Parse, Position, Relocate};
+use super::{Parse, Relocate};
 
-impl<'a> Parse<'a> for types::Operation<'a> {
+impl<'a> Parse<'a> for Operation<'a> {
     fn parse_machine_code(input: error::Span<'a>) -> error::LocatedIResult<'a, Self> {
         let (operand, instruction) = take(1usize)(input)?;
 
         let (instruction, instruction_position) = position(instruction)?;
-        let instruction_position = types::Position::from(instruction_position);
-        let (_, instruction) = types::Instruction::parse_machine_code(instruction)?;
-        let instruction = types::Token::new(instruction_position, instruction);
+        let instruction_position = Position::from(instruction_position);
+        let (_, instruction) = Instruction::parse_machine_code(instruction)?;
+        let instruction = Token::new(instruction_position, instruction);
 
         let (operand, operand_position) = position(operand)?;
-        let operand_position = types::Position::from(operand_position);
+        let operand_position = Position::from(operand_position);
         let (rest, operand) = hexadecimal::<u32>(operand)?;
-        let operand = types::Operand::new_numeric(operand);
-        let operand = types::Token::new(operand_position, operand);
+        let operand = Operand::new_numeric(operand);
+        let operand = Token::new(operand_position, operand);
 
         Ok((rest, Self::new(instruction, operand)))
     }
 }
 
-impl Relocate for types::Operation<'_> {
-    fn relocate(self, base: Position) -> Self {
-        let operand = if let types::Operand::Numeric(operand) = self.operand.value {
+impl Relocate for Operation<'_> {
+    fn relocate(self, base: AddressPosition) -> Self {
+        let operand = if let Operand::Numeric(operand) = self.operand.value {
             operand
         } else {
             // FIXME Add proper error treatment
@@ -37,7 +37,7 @@ impl Relocate for types::Operation<'_> {
 
         Self::new(
             self.instruction,
-            types::Token::new(self.operand.position, (base + operand).into()),
+            Token::new(self.operand.position, (base + operand).into()),
         )
     }
 }
@@ -45,7 +45,8 @@ impl Relocate for types::Operation<'_> {
 #[cfg(test)]
 mod tests {
     use pretty_assertions::assert_eq;
-    use types::{Instruction, mneumonic::NormalMneumonic, Operand, Operation, Token, Position};
+    use utils::types::*;
+    use crate::types::{*, mneumonic::NormalMneumonic};
     use super::*;
 
     #[test]

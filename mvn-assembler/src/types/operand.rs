@@ -1,7 +1,7 @@
 use std::fmt;
 use std::convert::{From, TryFrom};
 
-use crate::Label;
+use super::Label;
 
 #[derive(Debug, PartialEq)]
 pub enum Operand<'a> {

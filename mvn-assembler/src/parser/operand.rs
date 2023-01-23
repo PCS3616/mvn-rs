@@ -3,14 +3,14 @@ use nom::bytes::complete::tag;
 use nom::character::complete;
 use nom::combinator::map;
 use nom::sequence::preceded;
-use types;
 use utils::error_or;
 use utils::{ascii, hexadecimal};
 
+use crate::types::{Operand, Label};
 use super::error::{LocatedIResult, Span};
 use super::Parse;
 
-impl<'a> Parse<'a> for types::Operand<'a> {
+impl<'a> Parse<'a> for Operand<'a> {
     fn parse_assembler(input: Span<'a>) -> LocatedIResult<'a, Self> {
         let numeric_operand = map(
             alt((
@@ -26,7 +26,7 @@ impl<'a> Parse<'a> for types::Operand<'a> {
         let numeric_operand =
             error_or!(numeric_operand, input, "could not parse numeric immediate");
 
-        let symbolic_operand = map(types::Label::parse_assembler, |label| Self::new_symbolic(label))(input);
+        let symbolic_operand = map(Label::parse_assembler, |label| Self::new_symbolic(label))(input);
         // `types::Label::parse` already returns a custom error
 
         if let Err(_) = numeric_operand {
@@ -40,7 +40,7 @@ impl<'a> Parse<'a> for types::Operand<'a> {
 #[cfg(test)]
 mod tests {
     use pretty_assertions::assert_eq;
-    use types::*;
+    use crate::types::*;
 
     use super::*;
 

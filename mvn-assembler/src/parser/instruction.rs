@@ -1,12 +1,11 @@
 use nom::{branch::alt, combinator::map};
-use types;
-use types::mneumonic;
 use utils::error_or;
 
+use crate::types::{Instruction, mneumonic};
 use super::error::{LocatedIResult, Span};
 use super::Parse;
 
-impl<'a> Parse<'a> for types::Instruction {
+impl<'a> Parse<'a> for Instruction {
     fn parse_assembler(input: Span<'a>) -> LocatedIResult<'a, Self> {
         let mneumonic = alt((
             map(mneumonic::NormalMneumonic::parse_assembler, |o| Self::Normal(o)),
@@ -25,8 +24,7 @@ impl<'a> Parse<'a> for types::Instruction {
 #[cfg(test)]
 mod tests {
     use pretty_assertions::assert_eq;
-    use types::mneumonic::*;
-    use types::*;
+    use crate::types::{Instruction, mneumonic::*};
 
     use super::*;
 

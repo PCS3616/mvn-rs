@@ -1,13 +1,13 @@
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::combinator::value;
-use types;
 use utils::error_or;
 
+use crate::types::mneumonic::*;
 use super::error::{LocatedIResult, Span};
 use super::Parse;
 
-impl<'a> Parse<'a> for types::mneumonic::NormalMneumonic {
+impl<'a> Parse<'a> for NormalMneumonic {
     fn parse_assembler(input: Span<'a>) -> LocatedIResult<Self> {
         let mneumonic = alt((
             value(Self::Jump, tag(Self::Jump.to_string().as_str())),
@@ -52,7 +52,7 @@ impl<'a> Parse<'a> for types::mneumonic::NormalMneumonic {
     }
 }
 
-impl<'a> Parse<'a> for types::mneumonic::PositionalMneumonic {
+impl<'a> Parse<'a> for PositionalMneumonic {
     fn parse_assembler(input: Span<'a>) -> LocatedIResult<'a, Self> {
         let mneumonic = alt((
             value(
@@ -78,7 +78,7 @@ impl<'a> Parse<'a> for types::mneumonic::PositionalMneumonic {
     }
 }
 
-impl<'a> Parse<'a> for types::mneumonic::RelationalMneumonic {
+impl<'a> Parse<'a> for RelationalMneumonic {
     fn parse_assembler(input: Span<'a>) -> LocatedIResult<'a, Self> {
         let mneumonic = alt((
             value(Self::Export, tag(Self::Export.to_string().as_str())),
@@ -97,8 +97,6 @@ impl<'a> Parse<'a> for types::mneumonic::RelationalMneumonic {
 mod tests {
     use dotenv_codegen::dotenv;
     use pretty_assertions::assert_eq;
-    use types::mneumonic::*;
-
     use super::*;
 
     #[test]

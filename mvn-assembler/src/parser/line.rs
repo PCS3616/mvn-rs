@@ -1,10 +1,9 @@
 use nom::character::complete::{space0, space1};
 use nom::combinator::opt;
 use nom::sequence::{delimited, tuple, terminated};
-use types::{Line, Token, Label, Operation};
-use types;
-use utils::comment_or_space;
+use utils::{comment_or_space, types::Token};
 
+use crate::types::{Line, Label, Operation};
 use super::error::{LocatedIResult, Span};
 use super::Parse;
 
@@ -33,9 +32,8 @@ impl<'a> Parse<'a> for Line<'a> {
 #[cfg(test)]
 mod tests {
     use pretty_assertions::assert_eq;
-    use types::mneumonic::*;
-    use types::*;
-
+    use utils::types::Position;
+    use crate::types::{*, mneumonic::*};
     use super::*;
 
     #[test]

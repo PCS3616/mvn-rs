@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 
-use types::{
+use crate::types::{
     mneumonic::{PositionalMneumonic, RelationalMneumonic},
     Instruction, Label, Line, Operand, Operation, Program,
 };
@@ -144,7 +144,7 @@ impl<'a> AddressedProgram<'a> {
 }
 
 impl<'a> AddressedLine<'a> {
-    pub fn new(address: Address, line: types::Line<'a>) -> Self {
+    pub fn new(address: Address, line: Line<'a>) -> Self {
         Self { address, line }
     }
 }
@@ -153,12 +153,10 @@ impl<'a> AddressedLine<'a> {
 mod tests {
     use indoc::indoc;
     use pretty_assertions::assert_eq;
-
+    use utils::types::*;
     use crate::parser::error::Span;
     use crate::parser::Parse;
-    use types::*;
-    use types::mneumonic::*;
-
+    use crate::types::{*, mneumonic::*};
     use super::*;
 
     #[test]

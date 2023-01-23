@@ -1,6 +1,8 @@
 use std::fmt;
 
-use super::{Label, Operation, Token, Position};
+use utils::types::{Token, Position};
+
+use super::{Label, Operation};
 
 #[derive(Debug, PartialEq)]
 pub struct Line<'a> {

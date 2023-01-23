@@ -1,4 +1,4 @@
-use types::{Instruction, Operand, mneumonic};
+use crate::types::{Instruction, Line, Operand, mneumonic};
 
 use crate::processor::address::{AddressedProgram, LabelMap, Address};
 
@@ -15,7 +15,7 @@ pub fn validate<'a, 'b>(program: &'a AddressedProgram<'b>, label_map: &'a LabelM
 }
 
 struct LineValidator<'a, 'b> {
-    line: &'a types::Line<'b>,
+    line: &'a Line<'b>,
     address: &'a Address,
     label_map: &'a LabelMap<'b>,
 }
@@ -122,7 +122,7 @@ impl<'b> LineValidator<'_, 'b> {
 }
 
 impl<'a, 'b> LineValidator<'a, 'b> {
-    fn new(line: &'a types::Line<'b>, address: &'a Address, label_map: &'a LabelMap<'b>) -> Self {
+    fn new(line: &'a Line<'b>, address: &'a Address, label_map: &'a LabelMap<'b>) -> Self {
         Self { line, address, label_map }
     }
 }
@@ -130,10 +130,9 @@ impl<'a, 'b> LineValidator<'a, 'b> {
 // TODO Implement unit tests
 #[cfg(test)]
 mod tests {
-    use types::{*, mneumonic::*};
-
+    use utils::types::*;
+    use crate::types::{*, mneumonic::*};
     use crate::processor::address::*;
-
     use super::*;
 
     /*

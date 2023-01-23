@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::mneumonic::{NormalMneumonic, PositionalMneumonic, RelationalMneumonic};
+use super::mneumonic::{NormalMneumonic, PositionalMneumonic, RelationalMneumonic};
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub enum Instruction {

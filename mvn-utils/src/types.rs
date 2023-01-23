@@ -1,22 +1,7 @@
-mod instruction;
-mod label;
-mod line;
-pub mod mneumonic;
-mod operand;
-mod operation;
-mod program;
-
-pub use instruction::Instruction;
-pub use label::Label;
-pub use line::Line;
-pub use operand::Operand;
-pub use operation::Operation;
-pub use program::Program;
-
 use std::convert::From;
 use std::fmt;
 
-use utils::error::Span;
+use super::error::Span;
 
 #[derive(Debug, Default, PartialEq, Clone, Copy)]
 pub struct Position {

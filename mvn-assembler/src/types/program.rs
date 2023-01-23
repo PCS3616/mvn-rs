@@ -1,4 +1,4 @@
-use crate::Line;
+use super::Line;
 
 #[derive(Debug, PartialEq)]
 pub struct Program<'a> {

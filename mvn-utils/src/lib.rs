@@ -1,12 +1,13 @@
 pub mod error;
+pub mod types;
 
 use error::{Span, LocatedIResult};
 use nom::character::complete::{hex_digit1, satisfy};
-use nom::combinator::{map, recognize};
-use nom::multi::many_m_n;
-use nom::character::complete::{space0, char, not_line_ending};
+use nom::combinator::{map, recognize, value};
+use nom::multi::{many_m_n, many0};
+use nom::character::complete::{space0, char, line_ending, not_line_ending};
 use nom::combinator::opt;
-use nom::sequence::{preceded, tuple};
+use nom::sequence::{preceded, tuple, pair};
 use num_traits::Num;
 
 /*
@@ -76,6 +77,10 @@ pub fn comment_or_space(input: error::Span) -> error::LocatedIResult<Option<Span
         None => None,
     };
     Ok((rest, matched))
+}
+
+pub fn ignorable<'a>(input: Span<'a>) -> LocatedIResult<'a, ()> {
+    value((), many0(pair(comment_or_space, line_ending)))(input)
 }
 
 #[cfg(test)]
