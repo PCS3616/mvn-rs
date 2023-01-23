@@ -7,7 +7,7 @@ use super::Parse;
 
 impl<'a> Parse<'a> for types::Label<'a> {
     fn parse_assembler(input: Span<'a>) -> LocatedIResult<'a, Self> {
-        let label = not(types::Instruction::parse)(input).and_then(
+        let label = not(types::Instruction::parse_assembler)(input).and_then(
             |(input, _)| map(identifier, |out: &str| Self::new(out))(input)
         );
         error_or!(
@@ -77,21 +77,21 @@ mod tests {
     #[test]
     fn should_not_parse_normal_mneumonic() {
         for mneumonic in normal_mneumonics().into_iter() {
-            assert!(Label::parse(mneumonic.to_string().as_str().into()).is_err());
+            assert!(Label::parse_assembler(mneumonic.to_string().as_str().into()).is_err());
         }
     }
 
     #[test]
     fn should_not_parse_positional_mneumonic() {
         for mneumonic in positional_mneumonics().into_iter() {
-            assert!(Label::parse(mneumonic.to_string().as_str().into()).is_err());
+            assert!(Label::parse_assembler(mneumonic.to_string().as_str().into()).is_err());
         }
     }
 
     #[test]
     fn should_not_parse_relational_mneumonic() {
         for mneumonic in relational_mneumonics().into_iter() {
-            assert!(Label::parse(mneumonic.to_string().as_str().into()).is_err());
+            assert!(Label::parse_assembler(mneumonic.to_string().as_str().into()).is_err());
         }
     }
 }

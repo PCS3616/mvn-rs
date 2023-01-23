@@ -36,7 +36,7 @@ use crate::processor::address::{AddressedProgram, LabelMap};
 use validator::validate;
 
 pub fn process(program: &str) -> Result<(AddressedProgram, LabelMap), MvnReportError> {
-    let parse_result = Program::parse(program.into());
+    let parse_result = Program::parse_assembler(program.into());
     let (_, program) = parse_result.map_err(|e| match e {
         nom::Err::Error(e) | nom::Err::Failure(e) => MvnReportError::from(e),
         nom::Err::Incomplete(e) => panic!("Unhandled error `{e:?}` occured"),
