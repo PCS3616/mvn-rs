@@ -6,7 +6,7 @@ pub mod program;
 
 pub use utils::error;
 
-pub type Position = u16;
+pub type Position = u32;
 
 pub trait Parse<'a>: Sized {
     fn parse_machine_code(input: error::Span<'a>) -> error::LocatedIResult<'a, Self>;

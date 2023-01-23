@@ -9,11 +9,11 @@ use super::{Parse, Position, Relocate};
 #[derive(Debug, PartialEq)]
 pub struct MachineAddress {
     pub properties: MachineAddressProperties,
-    pub position: u16,
+    pub position: u32,
 }
 
 impl MachineAddress {
-    pub fn new(properties: MachineAddressProperties, position: u16) -> Self {
+    pub fn new(properties: MachineAddressProperties, position: u32) -> Self {
         MachineAddress { properties, position }
     }
 
@@ -26,7 +26,7 @@ impl Relocate for MachineAddress {
     }
 }
 
-impl From<MachineAddress> for u16 {
+impl From<MachineAddress> for u32 {
     fn from(value: MachineAddress) -> Self {
         value.position
     }
@@ -36,7 +36,7 @@ impl Parse<'_> for MachineAddress {
     fn parse_machine_code(input: error::Span) -> error::LocatedIResult<Self> {
         let (position, properties) = take(1usize)(input)?;
         let (_, properties) = MachineAddressProperties::parse_machine_code(properties)?;
-        let (rest, position) = hexadecimal::<u16>(position)?;
+        let (rest, position) = hexadecimal::<u32>(position)?;
         Ok((rest, MachineAddress::new(properties, position)))
     }
 }
