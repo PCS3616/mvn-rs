@@ -32,7 +32,7 @@ impl<'a> Parse<'a> for AddressedLine<'a> {
         ))(input)?;
         let relational_annotation = match comment {
             Some(annotation) => {
-                let annotation = types::Line::parse_assembler(annotation.into());
+                let annotation = types::Line::parse_assembler(annotation);
                 match annotation {
                     Ok((_, line)) => match line.operation.instruction.value {
                         types::Instruction::Relational(_)  => Some(line),

@@ -6,6 +6,7 @@ use super::error;
 use super::Parse;
 use super::line::AddressedLine;
 
+#[derive(Debug)]
 pub struct AddressedProgram<'a> {
     pub lines: Vec<AddressedLine<'a>>,
 }

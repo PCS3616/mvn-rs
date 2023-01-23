@@ -6,7 +6,7 @@ use mvn_linker::processor::process_programs;
 
 fn main() {
     let main_program = indoc! {"
-        1000 0000 ; < ADD_TWO
+        1000 0000 ; < _ADD_TWO
         0000 0002 ; > RESULT
         0000 0004 ;         JP  MAIN
         0002 0000 ; RESULT  $   /2
@@ -16,7 +16,7 @@ fn main() {
         000A 0000 ; # MAIN
     "};
     let subroutine_program = indoc! {"
-        6100 0102 ; > ADD_TWO
+        6100 0102 ; > _ADD_TWO
         5000 0000 ; < RESULT
         4100 0002 ; TWO         K   /2
         4102 0000 ; ADD_TWO     $   /2
