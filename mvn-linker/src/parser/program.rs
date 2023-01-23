@@ -30,6 +30,7 @@ mod tests {
     use crate::types::*;
     use super::*;
 
+    // FIXME Test this function right
     #[test]
     fn should_parse_program() {
         let lines = vec![
@@ -50,6 +51,7 @@ mod tests {
         for (i, (source_line, parsed_line)) in lines.into_iter().zip(program.into_iter()).enumerate() {
             let i = (i + 1).try_into().unwrap();
             let mut addressed_line = AddressedLine::parse_machine_code(source_line.into()).unwrap().1;
+            addressed_line.address.position.line = i;
             addressed_line.operation.instruction.position.line = i;
             addressed_line.operation.operand.position.line = i;
             let relacional_annotation = if let Some(line) = addressed_line.relational_annotation {

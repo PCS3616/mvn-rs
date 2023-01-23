@@ -46,7 +46,7 @@ impl<'a> ProgramProcessor<'a> {
     fn replace_imported_operands_with_labels(instructions: Vec<AddressedLine<'a>>, mut import_map: ImportMap<'a>) -> AddressedProgram<'a> {
         let mut lines:  Vec<AddressedLine> = Vec::new();
         for line in instructions.into_iter() {
-            let line = if line.address.properties.operand_imported {
+            let line = if line.address.value.properties.operand_imported {
                 let operand = line.operation.operand.value.try_into().unwrap();
                 let operation = if let Some(label) = import_map.remove(&operand) {
                     let operand = Token::new(line.operation.operand.position, label.into());
@@ -104,7 +104,7 @@ impl<'a> ProgramsProcessor<'a> {
     fn replace_imported_operands_with_positions(program: AddressedProgram<'a>, export_map: &ExportMap<'a>) -> AddressedProgram<'a> {
         let mut lines: Vec<AddressedLine> = Vec::new();
         for line in program {
-            let line = if line.address.properties.operand_imported {
+            let line = if line.address.value.properties.operand_imported {
                 let operand: Label = line.operation.operand.value.try_into().unwrap();
                 let operation = if let Some(position) = export_map.get(&operand) {
                     let operand = Token::new(line.operation.operand.position, (*position).into());

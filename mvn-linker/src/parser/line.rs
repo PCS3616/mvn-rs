@@ -2,7 +2,7 @@ use nom::character::complete::space1;
 use nom::sequence::tuple;
 
 use assembler::parser::Parse as ParseAssembler;
-use utils::comment_or_space;
+use utils::{comment_or_space, types::Token};
 
 use crate::types::{MachineAddress, AddressPosition, AddressedLine};
 
@@ -12,7 +12,7 @@ use super::error;
 impl<'a> Parse<'a> for AddressedLine<'a> {
     fn parse_machine_code(input: error::Span<'a>) -> error::LocatedIResult<'a, Self> {
         let (rest, (address, _, operation, comment)) = tuple((
-            MachineAddress::parse_machine_code,
+            Token::<MachineAddress>::parse_machine_code,
             space1,
             assembler::types::Operation::parse_machine_code,
             comment_or_space,
@@ -36,11 +36,13 @@ impl<'a> Parse<'a> for AddressedLine<'a> {
 
 impl Relocate for AddressedLine<'_> {
     fn relocate(self, base: AddressPosition) -> Self {
-        let properties = self.address.properties;
+        let position = self.address.position;
+        let address = self.address.value;
+        let properties = address.properties;
         let address = if properties.line_relocatable {
-            self.address.relocate(base)
+            address.relocate(base)
         } else {
-            self.address
+            address
         };
 
         let operation = if properties.operand_relocatable {
@@ -49,7 +51,7 @@ impl Relocate for AddressedLine<'_> {
             self.operation
         };
 
-        Self::new(address, operation, self.relational_annotation)
+        Self::new(Token::new(position, address), operation, self.relational_annotation)
     }
 }
 
@@ -73,7 +75,10 @@ mod tests {
             assert_eq!(
                 AddressedLine::parse_machine_code(input.into()).unwrap().1,
                 AddressedLine::new(
-                    MachineAddress::new(MachineAddressProperties::new(false, false, false), 0),
+                    Token::new(
+                        Position::new(1, 1),
+                        MachineAddress::new(MachineAddressProperties::new(false, false, false), 0),
+                    ),
                     Operation::new(
                         Token::new(Position::new(1, position), Instruction::Normal(NormalMneumonic::Jump)),
                         Token::new(Position::new(1, position + 1), Operand::from(0)),
@@ -105,7 +110,10 @@ mod tests {
             assert_eq!(
                 AddressedLine::parse_machine_code(input.into()).unwrap().1,
                 AddressedLine::new(
-                    MachineAddress::new(MachineAddressProperties::new(false, false, false), 0),
+                    Token::new(
+                        Position::new(1, 1),
+                        MachineAddress::new(MachineAddressProperties::new(false, false, false), 0),
+                    ),
                     Operation::new(
                         Token::new(Position::new(1, 6), Instruction::Normal(NormalMneumonic::Jump)),
                         Token::new(Position::new(1, 7), Operand::from(0)),
@@ -129,7 +137,10 @@ mod tests {
             assert_eq!(
                 AddressedLine::parse_machine_code(input.into()).unwrap().1,
                 AddressedLine::new(
-                    MachineAddress::new(MachineAddressProperties::new(false, false, false), 0),
+                    Token::new(
+                        Position::new(1, 1),
+                        MachineAddress::new(MachineAddressProperties::new(false, false, false), 0),
+                    ),
                     Operation::new(
                         Token::new(Position::new(1, 6), Instruction::Normal(NormalMneumonic::Jump)),
                         Token::new(Position::new(1, 7), Operand::from(0)),

@@ -33,9 +33,9 @@ impl<'a> AddressedProgram<'a> {
 
     pub fn get_last_position(&self) -> AddressPosition {
         self.lines.iter().max_by_key(
-            |line| line.address.position
+            |line| line.address.value.position
         )
-        .map_or(0, |line| line.address.position)
+        .map_or(0, |line| line.address.value.position)
     }
 }
 

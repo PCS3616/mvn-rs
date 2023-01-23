@@ -1,16 +1,18 @@
+use utils::types::Token;
+
 use crate::types::AddressPosition;
 
 use super::MachineAddress;
 
 #[derive(Debug, PartialEq)]
 pub struct AddressedLine<'a> {
-    pub address: MachineAddress,
+    pub address: Token<MachineAddress>,
     pub operation: assembler::types::Operation<'a>,
     pub relational_annotation: Option<assembler::types::Line<'a>>,
 }
 
 impl<'a> AddressedLine<'a> {
-    pub fn new(address: MachineAddress, operation: assembler::types::Operation<'a>, relational_annotation: Option<assembler::types::Line<'a>>) -> Self{
+    pub fn new(address: Token<MachineAddress>, operation: assembler::types::Operation<'a>, relational_annotation: Option<assembler::types::Line<'a>>) -> Self{
         Self { address, operation, relational_annotation }
     }
 
