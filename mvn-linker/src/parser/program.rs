@@ -15,9 +15,11 @@ impl<'a> AddressedProgram<'a> {
     pub fn new(lines: Vec<AddressedLine<'a>>) -> Self {
         Self { lines }
     }
+}
+
 impl Relocate for AddressedProgram<'_> {
     fn relocate(self, base: Position) -> Self {
-        self.lines.into_iter().map(|line| line.relocate(base)).collect()
+        AddressedProgram::new(self.lines.into_iter().map(|line| line.relocate(base)).collect())
     }
 }
 
