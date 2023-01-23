@@ -28,7 +28,7 @@ impl<'a> Parse<'a> for types::Operation<'a> {
 
 impl Relocate for types::Operation<'_> {
     fn relocate(self, base: Position) -> Self {
-        let operand = if let types::Operand::Numeric(operand) = self.operand {
+        let operand = if let types::Operand::Numeric(operand) = self.operand.value {
             operand
         } else {
             // FIXME Add proper error treatment
@@ -37,7 +37,7 @@ impl Relocate for types::Operation<'_> {
 
         Self::new(
             self.instruction,
-            types::Operand::new_numeric(base + operand),
+            types::Token::new(self.operand.position, (base + operand).into()),
         )
     }
 }
