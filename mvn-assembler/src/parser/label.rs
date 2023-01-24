@@ -1,4 +1,6 @@
+use nom::character::complete::space1;
 use nom::combinator::{map, not};
+use nom::sequence::terminated;
 use utils::error_or;
 
 use crate::types::{Label, Instruction};
@@ -8,7 +10,7 @@ use super::Parse;
 
 impl<'a> Parse<'a> for Label<'a> {
     fn parse_assembler(input: Span<'a>) -> LocatedIResult<'a, Self> {
-        let label = not(Instruction::parse_assembler)(input).and_then(
+        let label = not(terminated(Instruction::parse_assembler, space1))(input).and_then(
             |(input, _)| map(identifier, |out: &str| Self::new(out))(input)
         );
         error_or!(
@@ -71,6 +73,12 @@ mod tests {
             assert_eq!(Label::parse_assembler(Span::new(input)).unwrap().1, output,);
         }
         assert!(Label::parse_assembler(Span::new("1V")).is_err());
+    }
+
+    #[test]
+    fn should_parse_label_starting_with_mneumonic() {
+        let label = format!("{}FOO", NormalMneumonic::Jump.to_string());
+        assert!(Label::parse_assembler(label.as_str().into()).is_ok());
     }
 
     #[test]
