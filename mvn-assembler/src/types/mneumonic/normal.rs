@@ -50,6 +50,20 @@ impl fmt::Display for NormalMneumonic {
     }
 }
 
+impl fmt::LowerHex for NormalMneumonic {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let value = u8::from(*self);
+        write!(f, "{value:x}")
+    }
+}
+
+impl fmt::UpperHex for NormalMneumonic {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let value = u8::from(*self);
+        write!(f, "{value:X}")
+    }
+}
+
 impl From<NormalMneumonic> for u8 {
     fn from(value: NormalMneumonic) -> Self {
         match value {

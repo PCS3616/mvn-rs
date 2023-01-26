@@ -1,6 +1,7 @@
 use indoc::indoc;
 
 use mvn_linker::processor::process;
+use mvn_linker::writer::print;
 
 fn main() {
     let main_program = indoc! {"
@@ -27,6 +28,5 @@ fn main() {
 
     let programs = vec![main_program, subroutine_program];
     let processor = process(programs);
-
-    println!("{:#?}", processor);
+    print(processor);
 }

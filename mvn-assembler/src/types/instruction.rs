@@ -19,3 +19,23 @@ impl fmt::Display for Instruction {
         write!(f, "{mneumonic}")
     }
 }
+
+impl fmt::LowerHex for Instruction {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if let Self::Normal(mneumonic) = self {
+            write!(f, "{mneumonic:x}")
+        } else {
+            write!(f, "{:x}", 0)
+        }
+    }
+}
+
+impl fmt::UpperHex for Instruction {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if let Self::Normal(mneumonic) = self {
+            write!(f, "{mneumonic:X}")
+        } else {
+            write!(f, "{:X}", 0)
+        }
+    }
+}

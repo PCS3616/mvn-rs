@@ -1,4 +1,4 @@
-mod program;
+pub mod program;
 
 use utils::error::MvnReportError;
 

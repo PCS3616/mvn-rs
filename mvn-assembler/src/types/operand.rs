@@ -60,10 +60,9 @@ impl<'a> TryFrom<Operand<'a>> for Label<'a> {
 
 impl<'a> fmt::Display for Operand<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let operand = match &self {
-            Self::Symbolic(label) => label.to_string(),
-            Self::Numeric(immediate) => immediate.to_string(),
-        };
-        write!(f, "{}", operand)
+        match &self {
+            Self::Symbolic(label) => write!(f, "{label}"),
+            Self::Numeric(immediate) => write!(f, "{immediate:03X}"),
+        }
     }
 }

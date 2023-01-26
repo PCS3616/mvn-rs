@@ -47,3 +47,15 @@ impl<T: fmt::Display> fmt::Display for Token<T> {
         write!(f, "{}", &self.value)
     }
 }
+
+impl<T: fmt::LowerHex> fmt::LowerHex for Token<T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:x}", &self.value)
+    }
+}
+
+impl<T: fmt::UpperHex> fmt::UpperHex for Token<T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:X}", &self.value)
+    }
+}

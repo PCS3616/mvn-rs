@@ -1,4 +1,5 @@
-use std::convert::{TryFrom, From};
+use std::convert::TryFrom;
+use std::fmt;
 
 #[derive(Debug, PartialEq)]
 pub struct MachineAddress {
@@ -13,9 +14,9 @@ impl MachineAddress {
 
 }
 
-impl From<MachineAddress> for u32 {
-    fn from(value: MachineAddress) -> Self {
-        value.position
+impl fmt::UpperHex for MachineAddress {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:X}{:03X}", self.properties, self.position)
     }
 }
 
@@ -34,6 +35,16 @@ impl MachineAddressProperties {
                 operand_relocatable,
                 operand_imported,
             }
+    }
+}
+
+impl fmt::UpperHex for MachineAddressProperties {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let value =
+            ((self.line_relocatable as u8) << 2)
+            + ((self.operand_relocatable as u8) << 1)
+            + self.operand_imported as u8;
+        write!(f, "{:X}", value)
     }
 }
 
