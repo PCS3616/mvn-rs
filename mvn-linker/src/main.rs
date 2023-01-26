@@ -1,8 +1,6 @@
 use indoc::indoc;
 
-use mvn_linker::parser::Parse;
-use mvn_linker::types::AddressedProgram;
-use mvn_linker::processor::ProgramsProcessor;
+use mvn_linker::processor::process;
 
 fn main() {
     let main_program = indoc! {"
@@ -28,11 +26,7 @@ fn main() {
     "};
 
     let programs = vec![main_program, subroutine_program];
-    let programs = programs.into_iter().map(
-        |source| AddressedProgram::parse_machine_code(source.into()).unwrap().1
-    )
-    .collect();
-    let processor = ProgramsProcessor::new(programs);
+    let processor = process(programs);
 
     println!("{:#?}", processor);
 }
