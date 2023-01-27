@@ -44,7 +44,7 @@ fn print_error(program: &str, error: MvnReportError) {
         slices: vec![Slice {
             source: source,
             line_start: line,
-            origin: Some("examples/foo.rs"),
+            origin: None,
             fold: false,
             annotations: vec![
                 SourceAnnotation {

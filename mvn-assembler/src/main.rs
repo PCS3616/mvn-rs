@@ -1,7 +1,7 @@
 use indoc::indoc;
 
 use mvn_assembler::processor::process;
-use mvn_assembler::writer::base::print;
+use mvn_assembler::writer::print;
 
 fn main() {
     let program = indoc! {"
