@@ -11,7 +11,7 @@ nom = "7.1.1"
 nom_locate = "4.0.0"
 dotenv_codegen = "0.15.0"
 utils = { path = "../mvn-utils", package = "mvn-utils" }
-annotate-snippets = "0.9.1"
+annotate-snippets = { version = "0.9.1", features = ["color"] }
 
 [dev-dependencies]
 pretty_assertions = "1.2.1"
