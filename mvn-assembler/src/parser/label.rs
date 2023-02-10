@@ -84,21 +84,27 @@ mod tests {
     #[test]
     fn should_not_parse_normal_mneumonic() {
         for mneumonic in normal_mneumonics().into_iter() {
-            assert!(Label::parse_assembler(mneumonic.to_string().as_str().into()).is_err());
+            let mut mneumonic = mneumonic.to_string();
+            mneumonic.push_str(" ");
+            assert!(Label::parse_assembler(mneumonic.as_str().into()).is_err());
         }
     }
 
     #[test]
     fn should_not_parse_positional_mneumonic() {
         for mneumonic in positional_mneumonics().into_iter() {
-            assert!(Label::parse_assembler(mneumonic.to_string().as_str().into()).is_err());
+            let mut mneumonic = mneumonic.to_string();
+            mneumonic.push_str(" ");
+            assert!(Label::parse_assembler(mneumonic.as_str().into()).is_err());
         }
     }
 
     #[test]
     fn should_not_parse_relational_mneumonic() {
         for mneumonic in relational_mneumonics().into_iter() {
-            assert!(Label::parse_assembler(mneumonic.to_string().as_str().into()).is_err());
+            let mut mneumonic = mneumonic.to_string();
+            mneumonic.push_str(" ");
+            assert!(Label::parse_assembler(mneumonic.as_str().into()).is_err());
         }
     }
 }
