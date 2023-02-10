@@ -106,7 +106,8 @@ impl<'a> AddressedProgram<'a> {
                 if let Operand::Numeric(operand) = operand {
                     let operand = *operand;
                     match mneumonic {
-                        PositionalMneumonic::ReserveMemory => current_position + operand,
+                        // Memory reservers are specified in 16b words, while position is in bytes
+                        PositionalMneumonic::ReserveMemory => current_position + 2 * operand,
                         PositionalMneumonic::SetAbsoluteOrigin
                         | PositionalMneumonic::SetRelocatableOrigin => operand,
                         _ => current_position,
@@ -398,6 +399,8 @@ mod tests {
     fn should_resolve_reserved_memory_addresses() {
         let input = Program::parse_assembler(Span::new(indoc! {"
             JP /0
+            $ /1
+            JP /0
             $ /2
             JP /0
             $ /10
@@ -423,7 +426,7 @@ mod tests {
                 },
                 line: Line::new(None, Operation::new(
                     Token::new(Position::new(2, 1), Instruction::Positional(PositionalMneumonic::ReserveMemory)),
-                    Token::new(Position::new(2, 3), Operand::from(2)),
+                    Token::new(Position::new(2, 3), Operand::from(1)),
                 )),
             },
             AddressedLine {
@@ -443,17 +446,37 @@ mod tests {
                 },
                 line: Line::new(None, Operation::new(
                     Token::new(Position::new(4, 1), Instruction::Positional(PositionalMneumonic::ReserveMemory)),
-                    Token::new(Position::new(4, 3), Operand::from(0x10)),
+                    Token::new(Position::new(4, 3), Operand::from(2)),
                 )),
             },
             AddressedLine {
                 address: Address {
-                    position: 0x16,
+                    position: 0xA,
                     ..Default::default()
                 },
                 line: Line::new(None, Operation::new(
                     Token::new(Position::new(5, 1), Instruction::Normal(NormalMneumonic::Jump)),
                     Token::new(Position::new(5, 4), Operand::from(0)),
+                )),
+            },
+            AddressedLine {
+                address: Address {
+                    position: 0xC,
+                    ..Default::default()
+                },
+                line: Line::new(None, Operation::new(
+                    Token::new(Position::new(6, 1), Instruction::Positional(PositionalMneumonic::ReserveMemory)),
+                    Token::new(Position::new(6, 3), Operand::from(0x10)),
+                )),
+            },
+            AddressedLine {
+                address: Address {
+                    position: 0x2C,
+                    ..Default::default()
+                },
+                line: Line::new(None, Operation::new(
+                    Token::new(Position::new(7, 1), Instruction::Normal(NormalMneumonic::Jump)),
+                    Token::new(Position::new(7, 4), Operand::from(0)),
                 )),
             },
         ]);
@@ -503,7 +526,7 @@ mod tests {
             (
                 Label("TEST11"),
                 Address {
-                    position: 0x112,
+                    position: 0x122,
                     relocatable: false,
                     ..Default::default()
                 },
