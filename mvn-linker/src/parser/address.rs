@@ -42,7 +42,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn should_parse_address_properties() {
+    fn should_parse_valid_address_properties() {
         let inputs_outputs = vec![
             ("0", MachineAddressProperties::new(false, false, false)),
             ("1", MachineAddressProperties::new(false, false, true)),
@@ -60,6 +60,12 @@ mod tests {
     }
 
     #[test]
+    fn should_reject_invalid_address_properties() {
+        assert!(MachineAddressProperties::parse_machine_code("3".into()).is_err());
+        assert!(MachineAddressProperties::parse_machine_code("7".into()).is_err());
+    }
+
+    #[test]
     fn should_parse_address() {
         let properties = MachineAddressProperties::new(false, false, false);
         let inputs_outputs = vec![
@@ -70,6 +76,25 @@ mod tests {
             ("0010", MachineAddress::new(properties, 16)),
         ];
         for (input, output) in inputs_outputs {
+            assert_eq!(
+                MachineAddress::parse_machine_code(input.into()).unwrap().1,
+                output
+            );
+        }
+    }
+
+    #[test]
+    fn should_parse_address_with_non_default_properties() {
+        let inputs_outputs = vec![
+            ("1000", (false, false, true), 0),
+            ("2002", (false, true, false), 2),
+            ("400A", (true, false, false), 10),
+            ("500E", (true, false, true), 14),
+            ("6010", (true, true, false), 16),
+        ];
+        for (input, address_properties, position) in inputs_outputs {
+            let address_properties = MachineAddressProperties::new(address_properties.0, address_properties.1, address_properties.2);
+            let output = MachineAddress::new(address_properties, position);
             assert_eq!(
                 MachineAddress::parse_machine_code(input.into()).unwrap().1,
                 output

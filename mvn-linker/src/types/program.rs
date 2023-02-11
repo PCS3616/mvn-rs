@@ -13,6 +13,8 @@ impl<'a> AddressedProgram<'a> {
         Self { lines }
     }
 
+    // TODO Implement wrapper types for imports, exports and instructions
+    // so we don't have to depend on getting the return order right
     pub fn partition(self) -> (Lines<'a>, Lines<'a>, Lines<'a>) {
         let (symbol_table, instructions): (Vec<AddressedLine>, Vec<AddressedLine>) = self.lines.into_iter().partition(
             |line| line.relational_annotation.is_some()
@@ -55,5 +57,104 @@ impl<'a> FromIterator<AddressedLine<'a>> for AddressedProgram<'a> {
             lines.push(line);
         }
         Self::new(lines)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use pretty_assertions::assert_eq;
+    use assembler::types::Line;
+
+    use crate::types::{MachineAddressProperties, MachineAddress, Operation, Operand};
+    use crate::types::mneumonic::{NormalMneumonic, RelationalMneumonic};
+
+    use super::*;
+
+    fn test_exports() -> Lines<'static> {
+        vec![AddressedLine::new(
+            MachineAddress::new(
+                MachineAddressProperties::new(false, false, false),
+                0x000,
+            ).into(),
+            Operation::new(
+                Instruction::Normal(NormalMneumonic::Jump).into(),
+                Operand::from(0).into(),
+            ),
+            Some(Line::new(
+                None,
+                Operation::new(
+                    Instruction::Relational(RelationalMneumonic::Export).into(),
+                    Operand::from("FOO").into(),
+                ),
+            )),
+        )]
+    }
+
+    fn test_imports() -> Lines<'static> {
+        vec![AddressedLine::new(
+            MachineAddress::new(
+                MachineAddressProperties::new(false, false, false),
+                0x002,
+            ).into(),
+            Operation::new(
+                Instruction::Normal(NormalMneumonic::Jump).into(),
+                Operand::from(0).into(),
+            ),
+            Some(Line::new(
+                None,
+                Operation::new(
+                    Instruction::Relational(RelationalMneumonic::Import).into(),
+                    Operand::from("BAR").into(),
+                ),
+            )),
+        )]
+    }
+
+    fn test_instructions() -> Lines<'static> {
+        vec![
+            AddressedLine::new(
+                MachineAddress::new(
+                    MachineAddressProperties::new(false, false, false),
+                    0x004,
+                ).into(),
+                Operation::new(
+                    Instruction::Normal(NormalMneumonic::LoadValue).into(),
+                    Operand::new_numeric(0x001).into(),
+                ),
+                None,
+            ),
+            AddressedLine::new(
+                MachineAddress::new(
+                    MachineAddressProperties::new(false, false, false),
+                    0x100,
+                ).into(),
+                Operation::new(
+                    Instruction::Normal(NormalMneumonic::HaltMachine).into(),
+                    Operand::new_numeric(0x100).into(),
+                ),
+                None,
+            ),
+        ]
+    }
+
+    fn test_program() -> AddressedProgram<'static> {
+        let mut lines = test_exports();
+        lines.append(&mut test_imports());
+        lines.append(&mut test_instructions());
+        AddressedProgram::new(lines)
+    }
+
+    #[test]
+    fn should_partition_code() {
+        let program = test_program();
+        let (imports, exports, instructions) = program.partition();
+        assert_eq!(exports, test_exports());
+        assert_eq!(imports, test_imports());
+        assert_eq!(instructions, test_instructions());
+    }
+
+    #[test]
+    fn should_get_last_position() {
+        assert_eq!(test_program().get_last_position(), 0x100);
     }
 }

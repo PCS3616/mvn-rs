@@ -68,4 +68,9 @@ mod tests {
             )
         }
     }
+
+    #[test]
+    fn should_reject_invalid_instruction() {
+        assert!(Operation::parse_machine_code("G000".into()).is_err());
+    }
 }

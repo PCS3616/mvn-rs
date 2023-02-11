@@ -39,9 +39,38 @@ mod tests {
 
     #[test]
     fn should_parse_instruction() {
-        assert_eq!(
-            Instruction::parse_machine_code("0".into()).unwrap().1,
-            Instruction::Normal(NormalMneumonic::Jump),
-        )
+        let inputs_outputs = vec![
+            ("0", NormalMneumonic::Jump),
+            ("1", NormalMneumonic::JumpIfZero),
+            ("2", NormalMneumonic::JumpIfNegative),
+            ("3", NormalMneumonic::LoadValue),
+            ("4", NormalMneumonic::Add),
+            ("5", NormalMneumonic::Subtract),
+            ("6", NormalMneumonic::Multiply),
+            ("7", NormalMneumonic::Divide),
+            ("8", NormalMneumonic::Load),
+            ("9", NormalMneumonic::Memory),
+            ("A", NormalMneumonic::Subroutine),
+            ("B", NormalMneumonic::ReturnFromSubrotine),
+            ("C", NormalMneumonic::HaltMachine),
+            ("D", NormalMneumonic::GetData),
+            ("E", NormalMneumonic::PutData),
+            ("F", NormalMneumonic::OperatingSystem),
+        ];
+        for (input, output) in inputs_outputs {
+            assert_eq!(
+                Instruction::parse_machine_code(input.into()).unwrap().1,
+                Instruction::Normal(output),
+            )
+        }
+    }
+
+    #[test]
+    fn should_reject_invalid_instruction() {
+        assert!(Instruction::parse_machine_code(";".into()).is_err());
+        assert!(Instruction::parse_machine_code("@".into()).is_err());
+        assert!(Instruction::parse_machine_code(">".into()).is_err());
+        assert!(Instruction::parse_machine_code("<".into()).is_err());
+        assert!(Instruction::parse_machine_code("G".into()).is_err());
     }
 }
