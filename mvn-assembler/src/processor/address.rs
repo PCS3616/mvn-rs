@@ -157,7 +157,7 @@ mod tests {
     use utils::types::*;
     use crate::parser::error::Span;
     use crate::parser::Parse;
-    use crate::types::{*, mneumonic::*};
+    use crate::types::mneumonic::*;
     use super::*;
 
     #[test]

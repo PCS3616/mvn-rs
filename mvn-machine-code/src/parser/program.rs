@@ -25,7 +25,7 @@ impl<'a> Parse<'a> for AddressedProgram<'a> {
 #[cfg(test)]
 mod tests {
     use pretty_assertions::assert_eq;
-    use assembler::types::Line;
+    use assembly::types::Line;
     use utils::types::*;
     use crate::types::*;
     use super::*;

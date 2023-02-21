@@ -10,18 +10,18 @@ use super::MachineAddress;
 pub struct AddressedLine<'a> {
     pub address: Token<MachineAddress>,
     pub operation: Operation<'a>,
-    pub relational_annotation: Option<assembler::types::Line<'a>>,
+    pub relational_annotation: Option<assembly::types::Line<'a>>,
 }
 
 impl<'a> AddressedLine<'a> {
-    pub fn new(address: Token<MachineAddress>, operation: Operation<'a>, relational_annotation: Option<assembler::types::Line<'a>>) -> Self{
+    pub fn new(address: Token<MachineAddress>, operation: Operation<'a>, relational_annotation: Option<assembly::types::Line<'a>>) -> Self{
         Self { address, operation, relational_annotation }
     }
 
     // FIXME Modify API to get rid of this method
-    pub fn destruct(self) -> (assembler::types::Label<'a>, AddressPosition) {
+    pub fn destruct(self) -> (assembly::types::Label<'a>, AddressPosition) {
         let annotation = self.relational_annotation.unwrap();
-        let label: assembler::types::Label = annotation.operation.operand.value.try_into().unwrap();
+        let label: assembly::types::Label = annotation.operation.operand.value.try_into().unwrap();
         let position: AddressPosition = self.operation.operand.value.try_into().unwrap();
         (label, position)
     }

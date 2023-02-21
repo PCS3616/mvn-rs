@@ -1,5 +1,5 @@
 [package]
-name = "mvn-linker"
+name = "mvn-machine-code"
 version = "0.1.0-alpha"
 edition = "2021"
 
@@ -8,8 +8,9 @@ edition = "2021"
 [dependencies]
 indoc = "1.0.6"
 nom = "7.1.1"
+nom_locate = "4.0.0"
+dotenv_codegen = "0.15.0"
 utils = { path = "../mvn-utils", package = "mvn-utils" }
-machine-code = { path = "../mvn-machine-code", package = "mvn-machine-code" }
 assembly = { path = "../mvn-assembly", package = "mvn-assembly" }
 
 [dev-dependencies]

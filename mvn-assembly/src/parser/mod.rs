@@ -6,7 +6,6 @@ pub mod operand;
 pub mod operation;
 pub mod program;
 
-use nom::IResult;
 use nom_locate::position;
 pub use utils::error;
 use utils::types::Token;
@@ -28,11 +27,9 @@ impl<'a, T: Parse<'a>> Parse<'a> for Token<T> {
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::{alpha1, alphanumeric1};
-use nom::combinator::{map, recognize};
-use nom::error::ParseError;
-use nom::multi::{many0_count, many1, separated_list1};
+use nom::combinator::recognize;
+use nom::multi::many0_count;
 use nom::sequence::pair;
-use nom::InputLength;
 
 /*
  * Parsing identifiers that may start with a letter (or underscore)
@@ -46,29 +43,4 @@ pub fn identifier(input: error::Span) -> error::LocatedIResult<&str> {
         many0_count(alt((alphanumeric1, tag("_")))),
     ))(input)?;
     Ok((remainder, *matched))
-}
-
-/*
- * if parse with usable return Some(result),
- * if parse with ignorable, return None
- */
-pub fn alt_opt<I: Clone, O, O2, E: ParseError<I>>(
-    usable: impl FnMut(I) -> IResult<I, O, E>,
-    ignorable: impl FnMut(I) -> IResult<I, O2, E>,
-) -> impl FnMut(I) -> IResult<I, Option<O>, E> {
-    alt((
-        map(usable, |l| Some(l)),
-        map(ignorable, |_| None), // Linha em branco
-    ))
-}
-
-pub fn separated_list1_opt<I: Clone + InputLength, O, O2, O3, E: ParseError<I>>(
-    sep: impl FnMut(I) -> IResult<I, O, E>,
-    usable: impl FnMut(I) -> IResult<I, O2, E>,
-    ignorable: impl FnMut(I) -> IResult<I, O3, E>,
-) -> impl FnMut(I) -> IResult<I, Vec<O2>, E> {
-    map(
-        separated_list1(many1(sep), alt_opt(usable, ignorable)),
-        |ls| ls.into_iter().flatten().collect(),
-    )
 }

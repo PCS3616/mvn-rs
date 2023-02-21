@@ -17,6 +17,8 @@ fn print_error(error: MvnReportError) {
 
 fn print_program(processor: ProgramsProcessor) {
     for line in processor.linked_program {
+        // TODO Print actual address properties and implement relocator
+        // to later sort physical addresses out
         let line = AddressedLine { address: MachineAddress::new(MachineAddressProperties::new(false, false, false), line.address.value.position).into(), ..line };
         println!("{line}");
     }
@@ -37,7 +39,7 @@ fn relational_label_position_to_line(label: Label, position: AddressPosition, mn
     AddressedLine::new(
         MachineAddress::new(MachineAddressProperties::new(false, false, imported), 0).into(),
         Operation::new(Instruction::Relational(mneumonic).into(), Operand::from(position).into()),
-        Some(assembler::types::Line::new(
+        Some(assembly::types::Line::new(
             None, Operation::new(Instruction::Relational(mneumonic).into(), Operand::from(label).into())
         )),
     )

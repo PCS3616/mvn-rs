@@ -1,7 +1,7 @@
 use nom::character::complete::space1;
 use nom::sequence::tuple;
 
-use assembler::parser::Parse as ParseAssembler;
+use assembly::parser::Parse as ParseAssembler;
 use utils::{comment_or_space, types::Token};
 
 use crate::types::{MachineAddress, AddressPosition, AddressedLine};
@@ -14,15 +14,15 @@ impl<'a> Parse<'a> for AddressedLine<'a> {
         let (rest, (address, _, operation, comment)) = tuple((
             Token::<MachineAddress>::parse_machine_code,
             space1,
-            assembler::types::Operation::parse_machine_code,
+            assembly::types::Operation::parse_machine_code,
             comment_or_space,
         ))(input)?;
         let relational_annotation = match comment {
             Some(annotation) => {
-                let annotation = assembler::types::Line::parse_assembler(annotation);
+                let annotation = assembly::types::Line::parse_assembler(annotation);
                 match annotation {
                     Ok((_, line)) => match line.operation.instruction.value {
-                        assembler::types::Instruction::Relational(_)  => Some(line),
+                        assembly::types::Instruction::Relational(_)  => Some(line),
                         _ => None,
                     },
                     _ => None,
@@ -60,7 +60,7 @@ impl Relocate for AddressedLine<'_> {
 mod tests {
     use pretty_assertions::assert_eq;
     use utils::types::*;
-    use assembler::types::{*, mneumonic::*};
+    use assembly::types::{*, mneumonic::*};
     use super::*;
     use crate::types::{MachineAddress, MachineAddressProperties};
 

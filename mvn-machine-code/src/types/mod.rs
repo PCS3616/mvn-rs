@@ -8,7 +8,7 @@ pub use address::{MachineAddress, MachineAddressProperties};
 pub use line::AddressedLine;
 pub use program::AddressedProgram;
 
-pub use assembler::types::{
+pub use assembly::types::{
     Instruction,
     Operand,
     Operation,

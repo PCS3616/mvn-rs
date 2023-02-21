@@ -63,7 +63,7 @@ impl<'a> FromIterator<AddressedLine<'a>> for AddressedProgram<'a> {
 #[cfg(test)]
 mod tests {
     use pretty_assertions::assert_eq;
-    use assembler::types::Line;
+    use assembly::types::Line;
 
     use crate::types::{MachineAddressProperties, MachineAddress, Operation, Operand};
     use crate::types::mneumonic::{NormalMneumonic, RelationalMneumonic};

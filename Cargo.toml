@@ -2,7 +2,10 @@
 
 members = [
     "mvn-assembler",
+    "mvn-assembly",
     "mvn-cli",
     "mvn-linker",
+    "mvn-machine-code",
+    "mvn-relocator",
     "mvn-utils",
 ]

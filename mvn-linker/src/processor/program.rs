@@ -7,6 +7,8 @@ use crate::types::{Label, Operation, AddressPosition, AddressedProgram, Addresse
 use crate::parser::Relocate;
 
 type ImportMap<'a> = BTreeMap<AddressPosition, Label<'a>>;
+// TODO Store tuple (label, relocatable) in export map
+// to correctly write exports back
 type ExportMap<'a> = BTreeMap<Label<'a>, AddressPosition>;
 
 #[derive(Debug)]
