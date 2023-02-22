@@ -17,9 +17,6 @@ fn print_error(error: MvnReportError) {
 
 fn print_program(processor: ProgramsProcessor) {
     for line in processor.linked_program {
-        // TODO Print actual address properties and implement relocator
-        // to later sort physical addresses out
-        let line = AddressedLine { address: MachineAddress::new(MachineAddressProperties::new(false, false, false), line.address.value.position).into(), ..line };
         println!("{line}");
     }
 

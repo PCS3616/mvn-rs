@@ -3,7 +3,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use utils::error::MvnReportError;
 use utils::types::Token;
 
-use crate::types::{Label, Operation, AddressPosition, AddressedProgram, AddressedLine, Operand};
+use crate::types::{Label, Operation, AddressPosition, AddressedProgram, AddressedLine, Operand, MachineAddress, MachineAddressProperties};
 use crate::parser::Relocate;
 
 #[derive(Debug, Eq)]
@@ -95,6 +95,7 @@ impl<'a> ProgramsProcessor<'a> {
         AddressedProgram::new(lines)
     }
 
+    // TODO Refactor, possibly splitting into 2-3 functions
     fn replace_imported_operands_with_positions(program: AddressedProgram<'a>, export_map: &ExportMap<'a>, inverted_import_map: &ExportMap<'a>) -> Result<AddressedProgram<'a>, MvnReportError> {
         let mut lines: Vec<AddressedLine> = Vec::new();
         for line in program {
@@ -109,19 +110,23 @@ impl<'a> ProgramsProcessor<'a> {
                 // TODO Add relocatable field to Label to remove this clone
                 // and the RelocatableLabel struct
                 let operand: RelocatableLabel = operand.clone().into();
-                let position = if let Some(position) = export_map.get(&operand) {
-                    position
-                } else if let Some(position) = inverted_import_map.get(&operand) {
-                    position
+                let (position, operand_relocatable, operand_imported)= if let Some((relocatable_label, position)) = export_map.get_key_value(&operand) {
+                    (position, relocatable_label.relocatable, false)
+                } else if let Some((relocatable_label, position)) = inverted_import_map.get_key_value(&operand) {
+                    (position, relocatable_label.relocatable, true)
                 } else {
                     return Err(MvnReportError::new(
                         line.operation.operand.position,
                         Some("operand marked as imported but not imported".to_owned()),
                     ));
                 };
-                let operand = Token::new(line.operation.operand.position, (*position).into());
+                let properties = MachineAddressProperties { operand_relocatable, operand_imported, ..line.address.value.properties };
+                let address = MachineAddress { properties, ..line.address.value};
+                let address = Token::new(line.address.position, address);
+                let operand: Operand = (*position).into();
+                let operand = Token::new(line.operation.operand.position, operand);
                 let operation = Operation { operand, ..line.operation };
-                AddressedLine { operation, ..line }
+                AddressedLine { operation, address, ..line }
             } else {
                 line
             };
