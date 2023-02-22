@@ -19,11 +19,12 @@ impl<'a> AddressedLine<'a> {
     }
 
     // FIXME Modify API to get rid of this method
-    pub fn destruct(self) -> (assembly::types::Label<'a>, AddressPosition) {
+    pub fn destruct(self) -> (assembly::types::Label<'a>, AddressPosition, bool) {
         let annotation = self.relational_annotation.unwrap();
         let label: assembly::types::Label = annotation.operation.operand.value.try_into().unwrap();
         let position: AddressPosition = self.operation.operand.value.try_into().unwrap();
-        (label, position)
+        let relocatable = self.address.value.properties.operand_relocatable;
+        (label, position, relocatable)
     }
 }
 

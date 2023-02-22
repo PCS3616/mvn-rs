@@ -6,10 +6,52 @@ use utils::types::Token;
 use crate::types::{Label, Operation, AddressPosition, AddressedProgram, AddressedLine, Operand};
 use crate::parser::Relocate;
 
-type ImportMap<'a> = BTreeMap<AddressPosition, Label<'a>>;
-// TODO Store tuple (label, relocatable) in export map
-// to correctly write exports back
-type ExportMap<'a> = BTreeMap<Label<'a>, AddressPosition>;
+#[derive(Debug, Eq)]
+pub struct RelocatableLabel<'a> {
+    pub relocatable: bool,
+    pub label: Label<'a>,
+}
+
+impl<'a> Ord for RelocatableLabel<'a> {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.label.cmp(&other.label)
+    }
+}
+
+impl<'a> PartialOrd for RelocatableLabel<'a> {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(&other))
+    }
+}
+
+impl<'a> PartialEq for RelocatableLabel<'a> {
+    fn eq(&self, other: &Self) -> bool {
+        self.label.eq(&other.label)
+    }
+}
+
+impl <'a> From<Label<'a>> for RelocatableLabel<'a> {
+    fn from(value: Label<'a>) -> Self {
+        RelocatableLabel { relocatable: false, label: value }
+    }
+}
+
+impl<'a> RelocatableLabel<'a> {
+    pub fn new(relocatable: bool, label: Label<'a>) -> Self {
+        RelocatableLabel { relocatable, label }
+    }
+
+    pub fn label(&'a self) -> &'a Label<'a> {
+        &self.label
+    }
+
+    pub fn relocatable(&self) -> bool {
+        self.relocatable
+    }
+}
+
+type ImportMap<'a> = BTreeMap<AddressPosition, RelocatableLabel<'a>>;
+type ExportMap<'a> = BTreeMap<RelocatableLabel<'a>, AddressPosition>;
 
 #[derive(Debug)]
 pub struct ProgramsProcessor<'a> {
@@ -23,7 +65,7 @@ impl<'a> ProgramsProcessor<'a> {
         let mut processed_programs: Vec<AddressedProgram> = Vec::new();
         let mut base: AddressPosition = 0;
         let mut export_map = ExportMap::new();
-        let mut imports = BTreeSet::<Label>::new();
+        let mut imports = BTreeSet::<RelocatableLabel>::new();
         for program in programs {
             let processor = ProgramProcessor::process(base, program)?;
             base = processor.program.get_last_position() + 0x2;
@@ -33,8 +75,8 @@ impl<'a> ProgramsProcessor<'a> {
         }
         let inverted_import_map: BTreeMap<_, _> = imports
             .into_iter()
+            .filter(|label| !export_map.contains_key(label))
             .enumerate()
-            .filter(|(_, label)| !export_map.contains_key(label))
             .map(|(i, label)| (label, u32::try_from(i).unwrap()))
             .collect();
         let merged_program = Self::merge_programs(processed_programs);
@@ -64,6 +106,9 @@ impl<'a> ProgramsProcessor<'a> {
                     )),
                     Operand::Symbolic(label) => label,
                 };
+                // TODO Add relocatable field to Label to remove this clone
+                // and the RelocatableLabel struct
+                let operand: RelocatableLabel = operand.clone().into();
                 let position = if let Some(position) = export_map.get(&operand) {
                     position
                 } else if let Some(position) = inverted_import_map.get(&operand) {
@@ -87,11 +132,8 @@ impl<'a> ProgramsProcessor<'a> {
 
     fn extend_export_unique(original_map: &mut ExportMap<'a>, new_map: ExportMap<'a>) {
         for (key, value) in new_map.into_iter() {
-            match original_map.insert(key, value) {
-                // TODO Consider how to represent this error
-                // since there is no `Position` so `MvnReportError` wouldn't do
-                Some(_) => panic!("export map already contained label"),
-                None => continue,
+            if let Some(_) = original_map.insert(key, value) {
+                panic!("export map already contained label");
             }
         }
     }
@@ -117,8 +159,8 @@ impl<'a> ProgramProcessor<'a> {
         let mut import_map = ImportMap::new();
         for line in imports.into_iter() {
             // TODO Review API to replace `line.destruct()`
-            let (label, position) = line.destruct();
-            import_map.insert(position, label);
+            let (label, position, _) = line.destruct();
+            import_map.insert(position, label.into());
         }
         import_map
     }
@@ -127,8 +169,8 @@ impl<'a> ProgramProcessor<'a> {
         let mut export_map = ExportMap::new();
         for line in exports.into_iter() {
             // TODO Review API to replace `line.destruct()`
-            let (label, position) = line.destruct();
-            export_map.insert(label, position);
+            let (label, position, relocatable) = line.destruct();
+            export_map.insert(RelocatableLabel::new(relocatable, label), position);
         }
         export_map
     }
@@ -144,8 +186,8 @@ impl<'a> ProgramProcessor<'a> {
                         Some("can't replace numeric operand with position".to_owned()),
                     ))
                 };
-                let operand = if let Some(label) = import_map.get(&operand) {
-                    Token::new(line.operation.operand.position, label.clone().into())
+                let operand = if let Some(relocatable_label) = import_map.get(&operand) {
+                    Token::new(line.operation.operand.position, relocatable_label.label.clone().into())
                 } else {
                     return Err(MvnReportError::new(
                         line.operation.operand.position,

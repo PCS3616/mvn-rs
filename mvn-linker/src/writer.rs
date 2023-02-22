@@ -1,6 +1,6 @@
 use utils::error::MvnReportError;
 
-use crate::processor::program::ProgramsProcessor;
+use crate::processor::program::{ProgramsProcessor, RelocatableLabel};
 use crate::types::AddressPosition;
 use crate::types::{AddressedLine, MachineAddress, MachineAddressProperties, Operation, Instruction, Operand, mneumonic::RelationalMneumonic, Label};
 
@@ -24,20 +24,22 @@ fn print_program(processor: ProgramsProcessor) {
     }
 
     for (export_label, export_position) in processor.export_map.into_iter() {
-        let line = relational_label_position_to_line(export_label, export_position, RelationalMneumonic::Export);
+        let RelocatableLabel { relocatable, label: export_label } = export_label;
+        let line = relational_label_position_to_line(export_label, relocatable, export_position, RelationalMneumonic::Export);
         println!("{line}");
     }
 
     for (import_label, import_position) in processor.inverted_import_map.into_iter() {
-        let line = relational_label_position_to_line(import_label, import_position, RelationalMneumonic::Import);
+        let RelocatableLabel { relocatable: _, label: import_label } = import_label;
+        let line = relational_label_position_to_line(import_label, false, import_position, RelationalMneumonic::Import);
         println!("{line}");
     }
 }
 
-fn relational_label_position_to_line(label: Label, position: AddressPosition, mneumonic: RelationalMneumonic) -> AddressedLine {
+fn relational_label_position_to_line(label: Label, relocatable: bool, position: AddressPosition, mneumonic: RelationalMneumonic) -> AddressedLine {
     let imported = mneumonic == RelationalMneumonic::Import;
     AddressedLine::new(
-        MachineAddress::new(MachineAddressProperties::new(false, false, imported), 0).into(),
+        MachineAddress::new(MachineAddressProperties::new(false, relocatable, imported), 0).into(),
         Operation::new(Instruction::Relational(mneumonic).into(), Operand::from(position).into()),
         Some(assembly::types::Line::new(
             None, Operation::new(Instruction::Relational(mneumonic).into(), Operand::from(label).into())
