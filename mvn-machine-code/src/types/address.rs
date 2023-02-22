@@ -20,7 +20,7 @@ impl fmt::UpperHex for MachineAddress {
     }
 }
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, Default, PartialEq)]
 pub struct MachineAddressProperties {
     pub line_relocatable: bool,
     pub operand_relocatable: bool,

@@ -2,6 +2,7 @@ mod address;
 mod line;
 mod program;
 
+// TODO Reference utils::types::AddressPosition
 pub type AddressPosition = u32;
 
 pub use address::{MachineAddress, MachineAddressProperties};

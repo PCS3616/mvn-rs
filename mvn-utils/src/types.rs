@@ -1,3 +1,5 @@
+pub type AddressPosition = u32;
+
 use std::convert::From;
 use std::fmt;
 
