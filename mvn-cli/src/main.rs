@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 use std::fs;
 
-use clap::{Parser, Subcommand};
+use clap::{Parser, Subcommand, ArgAction, ArgGroup};
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -18,14 +18,23 @@ enum Commands {
         #[arg(short, long, value_parser = file_exists)]
         input: PathBuf
     },
+    #[command(group(
+        ArgGroup::new("linkage-type")
+        .required(true)
+        .args(["partial", "complete"])
+    ))]
     Link {
         #[arg(
             short,
             long = "input",
-            action = clap::ArgAction::Append,
+            action = ArgAction::Append,
             value_parser = file_exists
         )]
         inputs: Vec<PathBuf>,
+        #[arg(long)]
+        partial: bool,
+        #[arg(long)]
+        complete: bool,
     },
     Relocate {
         #[arg(short, long, value_parser = file_exists)]
@@ -43,13 +52,13 @@ fn main() {
             let process_result = assembler::processor::process(&program);
             assembler::writer::print(&program, process_result);
         },
-        Commands::Link { inputs } => {
+        Commands::Link { inputs, partial: _, complete} => {
             let programs: Vec<String> = inputs
                 .iter()
                 .map(|path| read_to_string(path))
                 .collect();
             let programs: Vec<&str> = programs.iter().map(String::as_str).collect();
-            let process_result = linker::processor::process(programs);
+            let process_result = linker::processor::process(programs, *complete);
             linker::writer::print(process_result);
         },
         Commands::Relocate { input, base } => {

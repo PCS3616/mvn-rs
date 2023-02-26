@@ -27,6 +27,6 @@ fn main() {
     "};
 
     let programs = vec![main_program, subroutine_program];
-    let processor = process(programs);
+    let processor = process(programs, false);
     print(processor);
 }
