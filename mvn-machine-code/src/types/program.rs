@@ -1,5 +1,5 @@
-use super::{AddressPosition, Instruction, mneumonic::RelationalMneumonic};
 use super::line::AddressedLine;
+use super::{mneumonic::RelationalMneumonic, AddressPosition, Instruction};
 
 type Lines<'a> = Vec<AddressedLine<'a>>;
 
@@ -16,28 +16,27 @@ impl<'a> AddressedProgram<'a> {
     // TODO Implement wrapper types for imports, exports and instructions
     // so we don't have to depend on getting the return order right
     pub fn partition(self) -> (Lines<'a>, Lines<'a>, Lines<'a>) {
-        let (symbol_table, instructions): (Vec<AddressedLine>, Vec<AddressedLine>) = self.lines.into_iter().partition(
-            |line| line.relational_annotation.is_some()
-        );
-        let (imports, exports): (Vec<AddressedLine>, Vec<AddressedLine>) = symbol_table.into_iter().partition(
-            |line| {
-                match &line.relational_annotation {
-                    Some(line) => match &line.operation.instruction.value {
-                        Instruction::Relational(mneumonic) => mneumonic == &RelationalMneumonic::Import,
-                        _ => false,
-                    }
-                    None => false,
-                }
-            }
-        );
+        let (symbol_table, instructions): (Vec<AddressedLine>, Vec<AddressedLine>) = self
+            .lines
+            .into_iter()
+            .partition(|line| line.relational_annotation.is_some());
+        let (imports, exports): (Vec<AddressedLine>, Vec<AddressedLine>) = symbol_table
+            .into_iter()
+            .partition(|line| match &line.relational_annotation {
+                Some(line) => match &line.operation.instruction.value {
+                    Instruction::Relational(mneumonic) => mneumonic == &RelationalMneumonic::Import,
+                    _ => false,
+                },
+                None => false,
+            });
         (imports, exports, instructions)
     }
 
     pub fn get_last_position(&self) -> AddressPosition {
-        self.lines.iter().max_by_key(
-            |line| line.address.value.position
-        )
-        .map_or(0, |line| line.address.value.position)
+        self.lines
+            .iter()
+            .max_by_key(|line| line.address.value.position)
+            .map_or(0, |line| line.address.value.position)
     }
 }
 
@@ -62,20 +61,17 @@ impl<'a> FromIterator<AddressedLine<'a>> for AddressedProgram<'a> {
 
 #[cfg(test)]
 mod tests {
-    use pretty_assertions::assert_eq;
     use assembly::types::Line;
+    use pretty_assertions::assert_eq;
 
-    use crate::types::{MachineAddressProperties, MachineAddress, Operation, Operand};
     use crate::types::mneumonic::{NormalMneumonic, RelationalMneumonic};
+    use crate::types::{MachineAddress, MachineAddressProperties, Operand, Operation};
 
     use super::*;
 
     fn test_exports() -> Lines<'static> {
         vec![AddressedLine::new(
-            MachineAddress::new(
-                MachineAddressProperties::new(false, false, false),
-                0x000,
-            ).into(),
+            MachineAddress::new(MachineAddressProperties::new(false, false, false), 0x000).into(),
             Operation::new(
                 Instruction::Normal(NormalMneumonic::Jump).into(),
                 Operand::from(0).into(),
@@ -92,10 +88,7 @@ mod tests {
 
     fn test_imports() -> Lines<'static> {
         vec![AddressedLine::new(
-            MachineAddress::new(
-                MachineAddressProperties::new(false, false, false),
-                0x002,
-            ).into(),
+            MachineAddress::new(MachineAddressProperties::new(false, false, false), 0x002).into(),
             Operation::new(
                 Instruction::Normal(NormalMneumonic::Jump).into(),
                 Operand::from(0).into(),
@@ -113,10 +106,8 @@ mod tests {
     fn test_instructions() -> Lines<'static> {
         vec![
             AddressedLine::new(
-                MachineAddress::new(
-                    MachineAddressProperties::new(false, false, false),
-                    0x004,
-                ).into(),
+                MachineAddress::new(MachineAddressProperties::new(false, false, false), 0x004)
+                    .into(),
                 Operation::new(
                     Instruction::Normal(NormalMneumonic::LoadValue).into(),
                     Operand::new_numeric(0x001).into(),
@@ -124,10 +115,8 @@ mod tests {
                 None,
             ),
             AddressedLine::new(
-                MachineAddress::new(
-                    MachineAddressProperties::new(false, false, false),
-                    0x100,
-                ).into(),
+                MachineAddress::new(MachineAddressProperties::new(false, false, false), 0x100)
+                    .into(),
                 Operation::new(
                     Instruction::Normal(NormalMneumonic::HaltMachine).into(),
                     Operand::new_numeric(0x100).into(),

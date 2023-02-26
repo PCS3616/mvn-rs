@@ -1,6 +1,6 @@
 use std::fmt;
 
-use utils::types::{Token, Position};
+use utils::types::{Position, Token};
 
 use super::{Label, Operation};
 
@@ -21,10 +21,7 @@ impl<'a> Line<'a> {
         } else {
             self.operation.instruction.position.column
         };
-        Position::new(
-            self.operation.instruction.position.line,
-            column,
-        )
+        Position::new(self.operation.instruction.position.line, column)
     }
 }
 

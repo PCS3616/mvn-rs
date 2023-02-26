@@ -1,5 +1,5 @@
-use std::fmt;
 use std::convert::{From, TryFrom};
+use std::fmt;
 
 use super::Label;
 
@@ -52,7 +52,9 @@ impl<'a> TryFrom<Operand<'a>> for Label<'a> {
     type Error = &'static str;
     fn try_from(value: Operand<'a>) -> Result<Self, Self::Error> {
         match value {
-            Operand::Numeric(_) => Err("operand is not symbolic, so cannot be converted to `Label`"),
+            Operand::Numeric(_) => {
+                Err("operand is not symbolic, so cannot be converted to `Label`")
+            }
             Operand::Symbolic(label) => Ok(label),
         }
     }

@@ -9,9 +9,11 @@ pub struct MachineAddress {
 
 impl MachineAddress {
     pub fn new(properties: MachineAddressProperties, position: u32) -> Self {
-        MachineAddress { properties, position }
+        MachineAddress {
+            properties,
+            position,
+        }
     }
-
 }
 
 impl fmt::UpperHex for MachineAddress {
@@ -27,21 +29,19 @@ pub struct MachineAddressProperties {
     pub operand_imported: bool,
 }
 
-
 impl MachineAddressProperties {
     pub fn new(line_relocatable: bool, operand_relocatable: bool, operand_imported: bool) -> Self {
-            MachineAddressProperties {
-                line_relocatable,
-                operand_relocatable,
-                operand_imported,
-            }
+        MachineAddressProperties {
+            line_relocatable,
+            operand_relocatable,
+            operand_imported,
+        }
     }
 }
 
 impl fmt::UpperHex for MachineAddressProperties {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let value =
-            ((self.line_relocatable as u8) << 2)
+        let value = ((self.line_relocatable as u8) << 2)
             + ((self.operand_relocatable as u8) << 1)
             + self.operand_imported as u8;
         write!(f, "{:X}", value)

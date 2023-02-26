@@ -6,8 +6,8 @@ use annotate_snippets::{
 
 use utils::error::MvnReportError;
 
-use crate::types::{Instruction, Line, Operand};
 use crate::processor::address::{Address, AddressedLine, AddressedProgram, LabelMap};
+use crate::types::{Instruction, Line, Operand};
 
 // pub fn write(
 //     validator_output: Result<(AddressedProgram, LabelMap), MvnParseError>,
@@ -26,10 +26,7 @@ pub fn print(
 
 fn print_error(program: &str, error: MvnReportError) {
     let line: usize = (error.position.line - 1).try_into().unwrap();
-    let source = program
-        .lines()
-        .nth(line)
-        .unwrap();
+    let source = program.lines().nth(line).unwrap();
     let column = error.position.column;
     // let span_length = error.span().len();
     let message = error.message.unwrap_or_default();
@@ -42,17 +39,15 @@ fn print_error(program: &str, error: MvnReportError) {
         }),
         footer: vec![],
         slices: vec![Slice {
-            source: source,
+            source,
             line_start: line,
             origin: None,
             fold: false,
-            annotations: vec![
-                SourceAnnotation {
-                    label: &message,
-                    annotation_type: AnnotationType::Error,
-                    range: (column, column + 1), // TODO Use proper span length
-                },
-            ],
+            annotations: vec![SourceAnnotation {
+                label: &message,
+                annotation_type: AnnotationType::Error,
+                range: (column, column + 1), // TODO Use proper span length
+            }],
         }],
         opt: FormatOptions {
             color: true,
@@ -81,9 +76,9 @@ fn print_program(program: AddressedProgram, label_map: LabelMap) {
 
         let (operand_address, operand_value) = match &operation.operand.value {
             Operand::Symbolic(label) => {
-                let operand_address = label_map.get(&label).unwrap();
+                let operand_address = label_map.get(label).unwrap();
                 (operand_address, operand_address.position)
-            },
+            }
             Operand::Numeric(immediate) => (&default_address, *immediate),
         };
 
@@ -99,12 +94,12 @@ fn print_program(program: AddressedProgram, label_map: LabelMap) {
                 print!(" ; {} {}", relational_mneumonic, relational_label.0);
             }
         }
-        println!("");
+        println!();
     }
 }
 
 fn resolve_nibble(line: &Address, operand: &Address) -> u8 {
-    ((0 as u8) << 3) // One bit is not necessary, so it's fixed at zero
+    (0u8  << 3) // One bit is not necessary, so it's fixed at zero
     + ((line.relocatable as u8) << 2)
     + ((operand.relocatable as u8) << 1)
     + (operand.imported as u8)

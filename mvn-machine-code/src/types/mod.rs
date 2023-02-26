@@ -9,10 +9,4 @@ pub use address::{MachineAddress, MachineAddressProperties};
 pub use line::AddressedLine;
 pub use program::AddressedProgram;
 
-pub use assembly::types::{
-    Instruction,
-    Operand,
-    Operation,
-    Label,
-    mneumonic,
-};
+pub use assembly::types::{mneumonic, Instruction, Label, Operand, Operation};

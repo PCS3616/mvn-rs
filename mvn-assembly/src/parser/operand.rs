@@ -6,9 +6,9 @@ use nom::sequence::preceded;
 use utils::error_or;
 use utils::{ascii, hexadecimal};
 
-use crate::types::{Operand, Label};
 use super::error::{LocatedIResult, Span};
 use super::Parse;
+use crate::types::{Label, Operand};
 
 impl<'a> Parse<'a> for Operand<'a> {
     fn parse_assembler(input: Span<'a>) -> LocatedIResult<'a, Self> {
@@ -21,15 +21,15 @@ impl<'a> Parse<'a> for Operand<'a> {
                 // ASCII
                 preceded(tag("\""), ascii),
             )),
-            |value: u32| Self::new_numeric(value),
+            Self::new_numeric,
         )(input);
         let numeric_operand =
             error_or!(numeric_operand, input, "could not parse numeric immediate");
 
-        let symbolic_operand = map(Label::parse_assembler, |label| Self::new_symbolic(label))(input);
+        let symbolic_operand = map(Label::parse_assembler, Self::new_symbolic)(input);
         // `types::Label::parse` already returns a custom error
 
-        if let Err(_) = numeric_operand {
+        if numeric_operand.is_err() {
             symbolic_operand
         } else {
             numeric_operand
@@ -39,8 +39,8 @@ impl<'a> Parse<'a> for Operand<'a> {
 
 #[cfg(test)]
 mod tests {
-    use pretty_assertions::assert_eq;
     use crate::types::*;
+    use pretty_assertions::assert_eq;
 
     use super::*;
 

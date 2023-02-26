@@ -27,7 +27,7 @@ impl From<Span<'_>> for Position {
 }
 
 #[derive(Debug, PartialEq)]
-pub struct Token<T> where {
+pub struct Token<T> {
     pub position: Position,
     pub value: T,
 }
@@ -40,7 +40,10 @@ impl<T> Token<T> {
 
 impl<T> From<T> for Token<T> {
     fn from(value: T) -> Self {
-        Self { value, position: Position::default() }
+        Self {
+            value,
+            position: Position::default(),
+        }
     }
 }
 

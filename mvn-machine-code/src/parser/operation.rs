@@ -1,7 +1,7 @@
 use nom::bytes::complete::take;
 use nom_locate::position;
 
-use crate::types::{Instruction, Operand, Operation, AddressPosition};
+use crate::types::{AddressPosition, Instruction, Operand, Operation};
 use utils::{hexadecimal, types::*};
 
 use super::error;
@@ -44,10 +44,9 @@ impl Relocate for Operation<'_> {
 
 #[cfg(test)]
 mod tests {
-    use pretty_assertions::assert_eq;
-    use utils::types::*;
-    use crate::types::{*, mneumonic::NormalMneumonic};
     use super::*;
+    use crate::types::{mneumonic::NormalMneumonic, *};
+    use pretty_assertions::assert_eq;
 
     #[test]
     fn should_parse_instruction() {
@@ -58,7 +57,7 @@ mod tests {
             ("9010", (NormalMneumonic::Memory, 0x10)),
         ];
         for (input, output) in inputs_outputs {
-            let (mneumonic, operand)= output;
+            let (mneumonic, operand) = output;
             assert_eq!(
                 Operation::parse_machine_code(input.into()).unwrap().1,
                 Operation::new(

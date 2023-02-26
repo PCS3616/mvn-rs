@@ -9,7 +9,6 @@ pub type Span<'a> = LocatedSpan<&'a str>;
 pub type LocatedError<'a> = nom::error::Error<Span<'a>>;
 pub type LocatedIResult<'a, O> = nom::IResult<Span<'a>, O, MvnParseError<'a>>;
 
-
 #[derive(Debug)]
 pub struct MvnReportError {
     pub position: Position,

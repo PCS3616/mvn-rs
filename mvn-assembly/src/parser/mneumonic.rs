@@ -3,9 +3,9 @@ use nom::bytes::complete::tag;
 use nom::combinator::value;
 use utils::error_or;
 
-use crate::types::mneumonic::*;
 use super::error::{LocatedIResult, Span};
 use super::Parse;
+use crate::types::mneumonic::*;
 
 impl<'a> Parse<'a> for NormalMneumonic {
     fn parse_assembler(input: Span<'a>) -> LocatedIResult<Self> {
@@ -95,9 +95,9 @@ impl<'a> Parse<'a> for RelationalMneumonic {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use dotenv_codegen::dotenv;
     use pretty_assertions::assert_eq;
-    use super::*;
 
     #[test]
     fn should_parse_mneumonic() {
@@ -136,7 +136,12 @@ mod tests {
         ];
 
         for (input, output) in inputs_outputs {
-            assert_eq!(NormalMneumonic::parse_assembler(Span::new(input)).unwrap().1, output,);
+            assert_eq!(
+                NormalMneumonic::parse_assembler(Span::new(input))
+                    .unwrap()
+                    .1,
+                output,
+            );
         }
     }
 
@@ -151,19 +156,27 @@ mod tests {
     #[test]
     fn should_parse_positional_pseudo_mneumonic() {
         assert_eq!(
-            PositionalMneumonic::parse_assembler(Span::new("@")).unwrap().1,
+            PositionalMneumonic::parse_assembler(Span::new("@"))
+                .unwrap()
+                .1,
             PositionalMneumonic::SetAbsoluteOrigin
         );
         assert_eq!(
-            PositionalMneumonic::parse_assembler(Span::new("&")).unwrap().1,
+            PositionalMneumonic::parse_assembler(Span::new("&"))
+                .unwrap()
+                .1,
             PositionalMneumonic::SetRelocatableOrigin
         );
         assert_eq!(
-            PositionalMneumonic::parse_assembler(Span::new("$")).unwrap().1,
+            PositionalMneumonic::parse_assembler(Span::new("$"))
+                .unwrap()
+                .1,
             PositionalMneumonic::ReserveMemory
         );
         assert_eq!(
-            PositionalMneumonic::parse_assembler(Span::new("#")).unwrap().1,
+            PositionalMneumonic::parse_assembler(Span::new("#"))
+                .unwrap()
+                .1,
             PositionalMneumonic::SetEnd
         );
     }
@@ -171,11 +184,15 @@ mod tests {
     #[test]
     fn should_parse_relational_pseudo_mneumonic() {
         assert_eq!(
-            RelationalMneumonic::parse_assembler(Span::new(">")).unwrap().1,
+            RelationalMneumonic::parse_assembler(Span::new(">"))
+                .unwrap()
+                .1,
             RelationalMneumonic::Export
         );
         assert_eq!(
-            RelationalMneumonic::parse_assembler(Span::new("<")).unwrap().1,
+            RelationalMneumonic::parse_assembler(Span::new("<"))
+                .unwrap()
+                .1,
             RelationalMneumonic::Import
         );
     }

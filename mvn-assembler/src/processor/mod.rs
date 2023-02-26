@@ -5,9 +5,9 @@ use nom;
 
 use utils::error::MvnReportError;
 
-use crate::types::Program;
 use crate::parser::Parse;
 use crate::processor::address::{AddressedProgram, LabelMap};
+use crate::types::Program;
 
 use validator::validate;
 

@@ -38,25 +38,29 @@ impl<'a> AddressedProgram<'a> {
                 instruction,
                 operand,
             } = &line.operation;
-            let address_position = if let Instruction::Relational(mneumonic) = instruction.value {
-                if let RelationalMneumonic::Import = mneumonic {
+            let address_position =
+                if let Instruction::Relational(RelationalMneumonic::Import) = instruction.value {
                     import_counter += 1;
                     import_counter - 1
                 } else {
                     position
-                }
-            } else {
-                position
-            };
+                };
 
             let address = Address {
                 position: address_position,
                 ..Default::default()
             };
-            let address =
-                AddressedProgram::resolve_address_metadata(&instruction.value, &mut relocatable, address);
+            let address = AddressedProgram::resolve_address_metadata(
+                &instruction.value,
+                &mut relocatable,
+                address,
+            );
             addresses.push(address);
-            position = AddressedProgram::resolve_next_position(&instruction.value, &operand.value, position);
+            position = AddressedProgram::resolve_next_position(
+                &instruction.value,
+                &operand.value,
+                position,
+            );
         }
 
         AddressedProgram::new(
@@ -125,14 +129,18 @@ impl<'a> AddressedProgram<'a> {
         for AddressedLine { address, line } in &self.lines {
             if let Some(label) = &line.label {
                 label_vector.push((label.value.clone(), address.clone()));
-            } else if let Instruction::Relational(mneumonic) = &line.operation.instruction.value {
-                if let RelationalMneumonic::Import = mneumonic {
-                    if let Operand::Symbolic(label) = &line.operation.operand.value {
-                        label_vector.push((
-                            label.clone(),
-                            Address {imported: true, position: address.position, ..Default::default()}
-                        ));
-                    }
+            } else if let Instruction::Relational(RelationalMneumonic::Import) =
+                &line.operation.instruction.value
+            {
+                if let Operand::Symbolic(label) = &line.operation.operand.value {
+                    label_vector.push((
+                        label.clone(),
+                        Address {
+                            imported: true,
+                            position: address.position,
+                            ..Default::default()
+                        },
+                    ));
                 }
             }
         }
@@ -152,13 +160,13 @@ impl<'a> AddressedLine<'a> {
 
 #[cfg(test)]
 mod tests {
-    use indoc::indoc;
-    use pretty_assertions::assert_eq;
-    use utils::types::*;
+    use super::*;
     use crate::parser::error::Span;
     use crate::parser::Parse;
     use crate::types::mneumonic::*;
-    use super::*;
+    use indoc::indoc;
+    use pretty_assertions::assert_eq;
+    use utils::types::*;
 
     #[test]
     fn should_resolve_addresses_without_pseudoinstructions() {
@@ -176,30 +184,48 @@ mod tests {
                     position: 0,
                     ..Default::default()
                 },
-                line: Line::new(None, Operation::new(
-                    Token::new(Position::new(1, 1), Instruction::Normal(NormalMneumonic::Jump)),
-                    Token::new(Position::new(1, 4), Operand::from(0)),
-                )),
+                line: Line::new(
+                    None,
+                    Operation::new(
+                        Token::new(
+                            Position::new(1, 1),
+                            Instruction::Normal(NormalMneumonic::Jump),
+                        ),
+                        Token::new(Position::new(1, 4), Operand::from(0)),
+                    ),
+                ),
             },
             AddressedLine {
                 address: Address {
                     position: 2,
                     ..Default::default()
                 },
-                line: Line::new(None, Operation::new(
-                    Token::new(Position::new(2, 1), Instruction::Normal(NormalMneumonic::SetConstant)),
-                    Token::new(Position::new(2, 3), Operand::from(0xFFFF)),
-                )),
+                line: Line::new(
+                    None,
+                    Operation::new(
+                        Token::new(
+                            Position::new(2, 1),
+                            Instruction::Normal(NormalMneumonic::SetConstant),
+                        ),
+                        Token::new(Position::new(2, 3), Operand::from(0xFFFF)),
+                    ),
+                ),
             },
             AddressedLine {
                 address: Address {
                     position: 4,
                     ..Default::default()
                 },
-                line: Line::new(None, Operation::new(
-                    Token::new(Position::new(4, 1), Instruction::Normal(NormalMneumonic::Add)),
-                    Token::new(Position::new(4, 4), Operand::from(1)),
-                )),
+                line: Line::new(
+                    None,
+                    Operation::new(
+                        Token::new(
+                            Position::new(4, 1),
+                            Instruction::Normal(NormalMneumonic::Add),
+                        ),
+                        Token::new(Position::new(4, 4), Operand::from(1)),
+                    ),
+                ),
             },
         ]);
         assert_eq!(AddressedProgram::process(input), expected);
@@ -226,10 +252,16 @@ mod tests {
                     exported: true,
                     ..Default::default()
                 },
-                line: Line::new(None, Operation::new(
-                    Token::new(Position::new(1, 1), Instruction::Relational(RelationalMneumonic::Export)),
-                    Token::new(Position::new(1, 3), Operand::from("EXPORTED")),
-                )),
+                line: Line::new(
+                    None,
+                    Operation::new(
+                        Token::new(
+                            Position::new(1, 1),
+                            Instruction::Relational(RelationalMneumonic::Export),
+                        ),
+                        Token::new(Position::new(1, 3), Operand::from("EXPORTED")),
+                    ),
+                ),
             },
             AddressedLine {
                 address: Address {
@@ -237,10 +269,16 @@ mod tests {
                     imported: true,
                     ..Default::default()
                 },
-                line: Line::new(None, Operation::new(
-                    Token::new(Position::new(4, 1), Instruction::Relational(RelationalMneumonic::Import)),
-                    Token::new(Position::new(4, 3), Operand::from("IMPORTED1")),
-                )),
+                line: Line::new(
+                    None,
+                    Operation::new(
+                        Token::new(
+                            Position::new(4, 1),
+                            Instruction::Relational(RelationalMneumonic::Import),
+                        ),
+                        Token::new(Position::new(4, 3), Operand::from("IMPORTED1")),
+                    ),
+                ),
             },
             AddressedLine {
                 address: Address {
@@ -248,10 +286,16 @@ mod tests {
                     imported: true,
                     ..Default::default()
                 },
-                line: Line::new(None, Operation::new(
-                    Token::new(Position::new(5, 1), Instruction::Relational(RelationalMneumonic::Import)),
-                    Token::new(Position::new(5, 3), Operand::from("IMPORTED2")),
-                )),
+                line: Line::new(
+                    None,
+                    Operation::new(
+                        Token::new(
+                            Position::new(5, 1),
+                            Instruction::Relational(RelationalMneumonic::Import),
+                        ),
+                        Token::new(Position::new(5, 3), Operand::from("IMPORTED2")),
+                    ),
+                ),
             },
             AddressedLine {
                 address: Address {
@@ -259,10 +303,16 @@ mod tests {
                     imported: true,
                     ..Default::default()
                 },
-                line: Line::new(None, Operation::new(
-                    Token::new(Position::new(6, 1), Instruction::Relational(RelationalMneumonic::Import)),
-                    Token::new(Position::new(6, 3), Operand::from("IMPORTED3")),
-                )),
+                line: Line::new(
+                    None,
+                    Operation::new(
+                        Token::new(
+                            Position::new(6, 1),
+                            Instruction::Relational(RelationalMneumonic::Import),
+                        ),
+                        Token::new(Position::new(6, 3), Operand::from("IMPORTED3")),
+                    ),
+                ),
             },
             AddressedLine {
                 address: Address {
@@ -271,10 +321,16 @@ mod tests {
                     imported: false,
                     ..Default::default()
                 },
-                line: Line::new(None, Operation::new(
-                    Token::new(Position::new(8, 1), Instruction::Normal(NormalMneumonic::Jump)),
-                    Token::new(Position::new(8, 4), Operand::from(0)),
-                )),
+                line: Line::new(
+                    None,
+                    Operation::new(
+                        Token::new(
+                            Position::new(8, 1),
+                            Instruction::Normal(NormalMneumonic::Jump),
+                        ),
+                        Token::new(Position::new(8, 4), Operand::from(0)),
+                    ),
+                ),
             },
         ]);
         assert_eq!(AddressedProgram::process(input), expected);
@@ -295,10 +351,16 @@ mod tests {
                     position: 0,
                     ..Default::default()
                 },
-                line: Line::new(None, Operation::new(
-                    Token::new(Position::new(1, 1), Instruction::Normal(NormalMneumonic::Jump)),
-                    Token::new(Position::new(1, 4), Operand::from(0)),
-                )),
+                line: Line::new(
+                    None,
+                    Operation::new(
+                        Token::new(
+                            Position::new(1, 1),
+                            Instruction::Normal(NormalMneumonic::Jump),
+                        ),
+                        Token::new(Position::new(1, 4), Operand::from(0)),
+                    ),
+                ),
             },
             // On the second line, position is meaningless
             AddressedLine {
@@ -306,20 +368,32 @@ mod tests {
                     position: 2,
                     ..Default::default()
                 },
-                line: Line::new(None, Operation::new(
-                    Token::new(Position::new(2, 1), Instruction::Positional(PositionalMneumonic::SetAbsoluteOrigin)),
-                    Token::new(Position::new(2, 3), Operand::from(0x100)),
-                )),
+                line: Line::new(
+                    None,
+                    Operation::new(
+                        Token::new(
+                            Position::new(2, 1),
+                            Instruction::Positional(PositionalMneumonic::SetAbsoluteOrigin),
+                        ),
+                        Token::new(Position::new(2, 3), Operand::from(0x100)),
+                    ),
+                ),
             },
             AddressedLine {
                 address: Address {
                     position: 0x100,
                     ..Default::default()
                 },
-                line: Line::new(None, Operation::new(
-                    Token::new(Position::new(3, 1), Instruction::Normal(NormalMneumonic::Jump)),
-                    Token::new(Position::new(3, 4), Operand::from(0)),
-                )),
+                line: Line::new(
+                    None,
+                    Operation::new(
+                        Token::new(
+                            Position::new(3, 1),
+                            Instruction::Normal(NormalMneumonic::Jump),
+                        ),
+                        Token::new(Position::new(3, 4), Operand::from(0)),
+                    ),
+                ),
             },
         ]);
         assert_eq!(AddressedProgram::process(input), expected);
@@ -342,10 +416,16 @@ mod tests {
                     position: 0,
                     ..Default::default()
                 },
-                line: Line::new(None, Operation::new(
-                    Token::new(Position::new(1, 1), Instruction::Normal(NormalMneumonic::Jump)),
-                    Token::new(Position::new(1, 4), Operand::from(0)),
-                )),
+                line: Line::new(
+                    None,
+                    Operation::new(
+                        Token::new(
+                            Position::new(1, 1),
+                            Instruction::Normal(NormalMneumonic::Jump),
+                        ),
+                        Token::new(Position::new(1, 4), Operand::from(0)),
+                    ),
+                ),
             },
             AddressedLine {
                 address: Address {
@@ -353,10 +433,16 @@ mod tests {
                     relocatable: true,
                     ..Default::default()
                 },
-                line: Line::new(None, Operation::new(
-                    Token::new(Position::new(2, 1), Instruction::Positional(PositionalMneumonic::SetRelocatableOrigin)),
-                    Token::new(Position::new(2, 3), Operand::from(0x100)),
-                )),
+                line: Line::new(
+                    None,
+                    Operation::new(
+                        Token::new(
+                            Position::new(2, 1),
+                            Instruction::Positional(PositionalMneumonic::SetRelocatableOrigin),
+                        ),
+                        Token::new(Position::new(2, 3), Operand::from(0x100)),
+                    ),
+                ),
             },
             AddressedLine {
                 address: Address {
@@ -364,10 +450,16 @@ mod tests {
                     relocatable: true,
                     ..Default::default()
                 },
-                line: Line::new(None, Operation::new(
-                    Token::new(Position::new(3, 1), Instruction::Normal(NormalMneumonic::Add)),
-                    Token::new(Position::new(3, 4), Operand::from(1)),
-                )),
+                line: Line::new(
+                    None,
+                    Operation::new(
+                        Token::new(
+                            Position::new(3, 1),
+                            Instruction::Normal(NormalMneumonic::Add),
+                        ),
+                        Token::new(Position::new(3, 4), Operand::from(1)),
+                    ),
+                ),
             },
             AddressedLine {
                 address: Address {
@@ -375,10 +467,16 @@ mod tests {
                     relocatable: false,
                     ..Default::default()
                 },
-                line: Line::new(None, Operation::new(
-                    Token::new(Position::new(4, 1), Instruction::Positional(PositionalMneumonic::SetAbsoluteOrigin)),
-                    Token::new(Position::new(4, 3), Operand::from(0x10)),
-                )),
+                line: Line::new(
+                    None,
+                    Operation::new(
+                        Token::new(
+                            Position::new(4, 1),
+                            Instruction::Positional(PositionalMneumonic::SetAbsoluteOrigin),
+                        ),
+                        Token::new(Position::new(4, 3), Operand::from(0x10)),
+                    ),
+                ),
             },
             AddressedLine {
                 address: Address {
@@ -386,10 +484,16 @@ mod tests {
                     relocatable: false,
                     ..Default::default()
                 },
-                line: Line::new(None, Operation::new(
-                    Token::new(Position::new(5, 1), Instruction::Normal(NormalMneumonic::Jump)),
-                    Token::new(Position::new(5, 4), Operand::from(0)),
-                )),
+                line: Line::new(
+                    None,
+                    Operation::new(
+                        Token::new(
+                            Position::new(5, 1),
+                            Instruction::Normal(NormalMneumonic::Jump),
+                        ),
+                        Token::new(Position::new(5, 4), Operand::from(0)),
+                    ),
+                ),
             },
         ]);
         assert_eq!(AddressedProgram::process(input), expected);
@@ -414,70 +518,112 @@ mod tests {
                     position: 0x0,
                     ..Default::default()
                 },
-                line: Line::new(None, Operation::new(
-                    Token::new(Position::new(1, 1), Instruction::Normal(NormalMneumonic::Jump)),
-                    Token::new(Position::new(1, 4), Operand::from(0)),
-                )),
+                line: Line::new(
+                    None,
+                    Operation::new(
+                        Token::new(
+                            Position::new(1, 1),
+                            Instruction::Normal(NormalMneumonic::Jump),
+                        ),
+                        Token::new(Position::new(1, 4), Operand::from(0)),
+                    ),
+                ),
             },
             AddressedLine {
                 address: Address {
                     position: 0x2,
                     ..Default::default()
                 },
-                line: Line::new(None, Operation::new(
-                    Token::new(Position::new(2, 1), Instruction::Positional(PositionalMneumonic::ReserveMemory)),
-                    Token::new(Position::new(2, 3), Operand::from(1)),
-                )),
+                line: Line::new(
+                    None,
+                    Operation::new(
+                        Token::new(
+                            Position::new(2, 1),
+                            Instruction::Positional(PositionalMneumonic::ReserveMemory),
+                        ),
+                        Token::new(Position::new(2, 3), Operand::from(1)),
+                    ),
+                ),
             },
             AddressedLine {
                 address: Address {
                     position: 0x4,
                     ..Default::default()
                 },
-                line: Line::new(None, Operation::new(
-                    Token::new(Position::new(3, 1), Instruction::Normal(NormalMneumonic::Jump)),
-                    Token::new(Position::new(3, 4), Operand::from(0)),
-                )),
+                line: Line::new(
+                    None,
+                    Operation::new(
+                        Token::new(
+                            Position::new(3, 1),
+                            Instruction::Normal(NormalMneumonic::Jump),
+                        ),
+                        Token::new(Position::new(3, 4), Operand::from(0)),
+                    ),
+                ),
             },
             AddressedLine {
                 address: Address {
                     position: 0x6,
                     ..Default::default()
                 },
-                line: Line::new(None, Operation::new(
-                    Token::new(Position::new(4, 1), Instruction::Positional(PositionalMneumonic::ReserveMemory)),
-                    Token::new(Position::new(4, 3), Operand::from(2)),
-                )),
+                line: Line::new(
+                    None,
+                    Operation::new(
+                        Token::new(
+                            Position::new(4, 1),
+                            Instruction::Positional(PositionalMneumonic::ReserveMemory),
+                        ),
+                        Token::new(Position::new(4, 3), Operand::from(2)),
+                    ),
+                ),
             },
             AddressedLine {
                 address: Address {
                     position: 0xA,
                     ..Default::default()
                 },
-                line: Line::new(None, Operation::new(
-                    Token::new(Position::new(5, 1), Instruction::Normal(NormalMneumonic::Jump)),
-                    Token::new(Position::new(5, 4), Operand::from(0)),
-                )),
+                line: Line::new(
+                    None,
+                    Operation::new(
+                        Token::new(
+                            Position::new(5, 1),
+                            Instruction::Normal(NormalMneumonic::Jump),
+                        ),
+                        Token::new(Position::new(5, 4), Operand::from(0)),
+                    ),
+                ),
             },
             AddressedLine {
                 address: Address {
                     position: 0xC,
                     ..Default::default()
                 },
-                line: Line::new(None, Operation::new(
-                    Token::new(Position::new(6, 1), Instruction::Positional(PositionalMneumonic::ReserveMemory)),
-                    Token::new(Position::new(6, 3), Operand::from(0x10)),
-                )),
+                line: Line::new(
+                    None,
+                    Operation::new(
+                        Token::new(
+                            Position::new(6, 1),
+                            Instruction::Positional(PositionalMneumonic::ReserveMemory),
+                        ),
+                        Token::new(Position::new(6, 3), Operand::from(0x10)),
+                    ),
+                ),
             },
             AddressedLine {
                 address: Address {
                     position: 0x2C,
                     ..Default::default()
                 },
-                line: Line::new(None, Operation::new(
-                    Token::new(Position::new(7, 1), Instruction::Normal(NormalMneumonic::Jump)),
-                    Token::new(Position::new(7, 4), Operand::from(0)),
-                )),
+                line: Line::new(
+                    None,
+                    Operation::new(
+                        Token::new(
+                            Position::new(7, 1),
+                            Instruction::Normal(NormalMneumonic::Jump),
+                        ),
+                        Token::new(Position::new(7, 4), Operand::from(0)),
+                    ),
+                ),
             },
         ]);
         assert_eq!(AddressedProgram::process(input), expected);
@@ -602,10 +748,17 @@ mod tests {
 
     #[test]
     fn imported_labels_should_not_get_line_attributes() {
-        let input = AddressedProgram::process(Program::parse_assembler(indoc! {"
+        let input = AddressedProgram::process(
+            Program::parse_assembler(
+                indoc! {"
             & /0
             < IMPORT
-        "}.into()).unwrap().1);
+        "}
+                .into(),
+            )
+            .unwrap()
+            .1,
+        );
         let expected = LabelMap::from([(
             Label("IMPORT"),
             Address {
@@ -613,7 +766,7 @@ mod tests {
                 relocatable: false,
                 imported: true,
                 ..Default::default()
-            }
+            },
         )]);
         assert_eq!(input.map_labels(), expected);
     }

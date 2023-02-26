@@ -1,14 +1,16 @@
 use nom::{branch::alt, combinator::map};
 use utils::error_or;
 
-use crate::types::{Instruction, mneumonic};
 use super::error::{LocatedIResult, Span};
 use super::Parse;
+use crate::types::{mneumonic, Instruction};
 
 impl<'a> Parse<'a> for Instruction {
     fn parse_assembler(input: Span<'a>) -> LocatedIResult<'a, Self> {
         let mneumonic = alt((
-            map(mneumonic::NormalMneumonic::parse_assembler, |o| Self::Normal(o)),
+            map(mneumonic::NormalMneumonic::parse_assembler, |o| {
+                Self::Normal(o)
+            }),
             map(mneumonic::PositionalMneumonic::parse_assembler, |o| {
                 Self::Positional(o)
             }),
@@ -23,8 +25,8 @@ impl<'a> Parse<'a> for Instruction {
 
 #[cfg(test)]
 mod tests {
+    use crate::types::{mneumonic::*, Instruction};
     use pretty_assertions::assert_eq;
-    use crate::types::{Instruction, mneumonic::*};
 
     use super::*;
 
@@ -39,7 +41,10 @@ mod tests {
             (">", Instruction::Relational(RelationalMneumonic::Export)),
         ];
         for (input, output) in inputs_outputs.into_iter() {
-            assert_eq!(Instruction::parse_assembler(Span::new(input)).unwrap().1, output,);
+            assert_eq!(
+                Instruction::parse_assembler(Span::new(input)).unwrap().1,
+                output,
+            );
         }
     }
 }

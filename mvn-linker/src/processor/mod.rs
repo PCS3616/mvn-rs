@@ -7,7 +7,10 @@ use crate::types::AddressedProgram;
 
 use program::ProgramsProcessor;
 
-pub fn process(programs: Vec<&str>, complete_linkage: bool) -> Result<ProgramsProcessor, MvnReportError> {
+pub fn process(
+    programs: Vec<&str>,
+    complete_linkage: bool,
+) -> Result<ProgramsProcessor, MvnReportError> {
     let mut parsed_programs: Vec<AddressedProgram> = Vec::new();
     for program in programs {
         let parse_result = AddressedProgram::parse_machine_code(program.into());
@@ -18,10 +21,8 @@ pub fn process(programs: Vec<&str>, complete_linkage: bool) -> Result<ProgramsPr
         parsed_programs.push(program);
     }
     let processor = ProgramsProcessor::process(parsed_programs)?;
-    if complete_linkage {
-        if !processor.inverted_import_map.is_empty() {
-            panic!("complete linkage failed due to unresolved imported symbols; after resolution, the symbol table looks like this: {:#?}", processor.inverted_import_map)
-        }
+    if complete_linkage && !processor.inverted_import_map.is_empty() {
+        panic!("complete linkage failed due to unresolved imported symbols; after resolution, the symbol table looks like this: {:#?}", processor.inverted_import_map)
     }
     Ok(processor)
 }

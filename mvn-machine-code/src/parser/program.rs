@@ -4,12 +4,17 @@ use nom::multi::separated_list1;
 
 use crate::types::{AddressedLine, AddressedProgram};
 
-use super::{Parse, AddressPosition, Relocate};
 use super::error;
+use super::{AddressPosition, Parse, Relocate};
 
 impl Relocate for AddressedProgram<'_> {
     fn relocate(self, base: AddressPosition) -> Self {
-        AddressedProgram::new(self.lines.into_iter().map(|line| line.relocate(base)).collect())
+        AddressedProgram::new(
+            self.lines
+                .into_iter()
+                .map(|line| line.relocate(base))
+                .collect(),
+        )
     }
 }
 
@@ -17,18 +22,18 @@ impl<'a> Parse<'a> for AddressedProgram<'a> {
     fn parse_machine_code(input: error::Span<'a>) -> error::LocatedIResult<'a, Self> {
         map(
             separated_list1(line_ending, AddressedLine::parse_machine_code),
-            |lines| Self::new(lines),
+            Self::new,
         )(input)
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use pretty_assertions::assert_eq;
-    use assembly::types::Line;
-    use utils::types::*;
-    use crate::types::*;
     use super::*;
+    use crate::types::*;
+    use assembly::types::Line;
+    use pretty_assertions::assert_eq;
+    use utils::types::*;
 
     // FIXME Test this function right
     #[test]
@@ -45,29 +50,39 @@ mod tests {
             "4104 C000",
         ];
         let program = lines.join("\n");
-        let program = AddressedProgram::parse_machine_code(
-            program.as_str().into()
-        ).unwrap().1;
-        for (i, (source_line, parsed_line)) in lines.into_iter().zip(program.into_iter()).enumerate() {
+        let program = AddressedProgram::parse_machine_code(program.as_str().into())
+            .unwrap()
+            .1;
+        for (i, (source_line, parsed_line)) in
+            lines.into_iter().zip(program.into_iter()).enumerate()
+        {
             let i = (i + 1).try_into().unwrap();
-            let mut addressed_line = AddressedLine::parse_machine_code(source_line.into()).unwrap().1;
+            let mut addressed_line = AddressedLine::parse_machine_code(source_line.into())
+                .unwrap()
+                .1;
             addressed_line.address.position.line = i;
             addressed_line.operation.instruction.position.line = i;
             addressed_line.operation.operand.position.line = i;
             let relacional_annotation = if let Some(line) = addressed_line.relational_annotation {
-                let Operation { instruction, operand } = line.operation;
-                Some(Line::new(None, Operation::new(
-                    Token::new(Position::new(i, instruction.position.column), instruction.value),
-                    Token::new(Position::new(i, operand.position.column), operand.value)
-                )))
+                let Operation {
+                    instruction,
+                    operand,
+                } = line.operation;
+                Some(Line::new(
+                    None,
+                    Operation::new(
+                        Token::new(
+                            Position::new(i, instruction.position.column),
+                            instruction.value,
+                        ),
+                        Token::new(Position::new(i, operand.position.column), operand.value),
+                    ),
+                ))
             } else {
                 None
             };
             addressed_line.relational_annotation = relacional_annotation;
-            assert_eq!(
-                addressed_line,
-                parsed_line,
-            );
+            assert_eq!(addressed_line, parsed_line,);
         }
     }
 }

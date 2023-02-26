@@ -2,7 +2,7 @@ use std::fmt;
 
 use utils::types::Token;
 
-use crate::types::{Operation, AddressPosition};
+use crate::types::{AddressPosition, Operation};
 
 use super::MachineAddress;
 
@@ -14,8 +14,16 @@ pub struct AddressedLine<'a> {
 }
 
 impl<'a> AddressedLine<'a> {
-    pub fn new(address: Token<MachineAddress>, operation: Operation<'a>, relational_annotation: Option<assembly::types::Line<'a>>) -> Self{
-        Self { address, operation, relational_annotation }
+    pub fn new(
+        address: Token<MachineAddress>,
+        operation: Operation<'a>,
+        relational_annotation: Option<assembly::types::Line<'a>>,
+    ) -> Self {
+        Self {
+            address,
+            operation,
+            relational_annotation,
+        }
     }
 
     // FIXME Modify API to get rid of this method
@@ -30,7 +38,10 @@ impl<'a> AddressedLine<'a> {
 
 impl fmt::Display for AddressedLine<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let Operation { instruction, operand } = &self.operation;
+        let Operation {
+            instruction,
+            operand,
+        } = &self.operation;
         write!(f, "{:X} {:X}{:}", self.address, instruction, operand)?;
         if let Some(annotation) = &self.relational_annotation {
             write!(f, " ; {annotation}")

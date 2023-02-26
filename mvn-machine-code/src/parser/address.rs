@@ -1,13 +1,13 @@
 use nom::bytes::complete::take;
 use utils::hexadecimal;
 
-use crate::types::{MachineAddress, MachineAddressProperties, AddressPosition};
+use crate::types::{AddressPosition, MachineAddress, MachineAddressProperties};
 
 use super::error;
 use super::{Parse, Relocate};
 
 impl Relocate for MachineAddress {
-    fn relocate(self, base: AddressPosition) -> Self{
+    fn relocate(self, base: AddressPosition) -> Self {
         // TODO Add error treatment
         Self::new(self.properties, base + self.position)
     }
@@ -29,7 +29,7 @@ impl Parse<'_> for MachineAddressProperties {
         match properties {
             Err(_) => Err(nom::Err::Error(error::MvnParseError::new(
                 "invalid address properties".to_owned(),
-                input
+                input,
             ))),
             Ok(properties) => Ok(("".into(), properties)),
         }
@@ -38,8 +38,8 @@ impl Parse<'_> for MachineAddressProperties {
 
 #[cfg(test)]
 mod tests {
-    use pretty_assertions::assert_eq;
     use super::*;
+    use pretty_assertions::assert_eq;
 
     #[test]
     fn should_parse_valid_address_properties() {
@@ -53,7 +53,9 @@ mod tests {
         ];
         for (input, output) in inputs_outputs {
             assert_eq!(
-                MachineAddressProperties::parse_machine_code(input.into()).unwrap().1,
+                MachineAddressProperties::parse_machine_code(input.into())
+                    .unwrap()
+                    .1,
                 output
             );
         }
@@ -93,7 +95,11 @@ mod tests {
             ("6010", (true, true, false), 16),
         ];
         for (input, address_properties, position) in inputs_outputs {
-            let address_properties = MachineAddressProperties::new(address_properties.0, address_properties.1, address_properties.2);
+            let address_properties = MachineAddressProperties::new(
+                address_properties.0,
+                address_properties.1,
+                address_properties.2,
+            );
             let output = MachineAddress::new(address_properties, position);
             assert_eq!(
                 MachineAddress::parse_machine_code(input.into()).unwrap().1,

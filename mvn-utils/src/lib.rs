@@ -1,13 +1,13 @@
 pub mod error;
 pub mod types;
 
-use error::{Span, LocatedIResult};
+use error::{LocatedIResult, Span};
+use nom::character::complete::{char, line_ending, not_line_ending, space0};
 use nom::character::complete::{hex_digit1, satisfy};
-use nom::combinator::{map, recognize, value};
-use nom::multi::{many_m_n, many0};
-use nom::character::complete::{space0, char, line_ending, not_line_ending};
 use nom::combinator::opt;
-use nom::sequence::{preceded, tuple, pair};
+use nom::combinator::{map, recognize, value};
+use nom::multi::{many0, many_m_n};
+use nom::sequence::{pair, preceded, tuple};
 use num_traits::Num;
 
 /*
@@ -67,26 +67,19 @@ pub fn hex_char_to_u8(string: &str) -> u8 {
 pub fn comment_or_space(input: error::Span) -> error::LocatedIResult<Option<Span>> {
     let (rest, matched) = preceded(
         space0,
-        opt(preceded(
-            tuple((char(';'), space0)),
-            not_line_ending
-        )),
+        opt(preceded(tuple((char(';'), space0)), not_line_ending)),
     )(input)?;
-    let matched = match matched {
-        Some(span) => Some(span),
-        None => None,
-    };
     Ok((rest, matched))
 }
 
-pub fn ignorable<'a>(input: Span<'a>) -> LocatedIResult<'a, ()> {
+pub fn ignorable(input: Span) -> LocatedIResult<()> {
     value((), many0(pair(comment_or_space, line_ending)))(input)
 }
 
 #[cfg(test)]
 mod tests {
-    use pretty_assertions::assert_eq;
     use super::*;
+    use pretty_assertions::assert_eq;
 
     #[test]
     fn should_parse_valid_hexadecimals() {
@@ -125,10 +118,31 @@ mod tests {
     #[test]
     fn should_parse_comment_with_varying_spacing() {
         let comment = Some("FOO");
-        assert_eq!(comment_or_space(";FOO".into()).unwrap().1.map(|span| *span), comment);
-        assert_eq!(comment_or_space(" ;FOO".into()).unwrap().1.map(|span| *span), comment);
-        assert_eq!(comment_or_space("; FOO".into()).unwrap().1.map(|span| *span), comment);
-        assert_eq!(comment_or_space(" ; FOO".into()).unwrap().1.map(|span| *span), comment);
+        assert_eq!(
+            comment_or_space(";FOO".into()).unwrap().1.map(|span| *span),
+            comment
+        );
+        assert_eq!(
+            comment_or_space(" ;FOO".into())
+                .unwrap()
+                .1
+                .map(|span| *span),
+            comment
+        );
+        assert_eq!(
+            comment_or_space("; FOO".into())
+                .unwrap()
+                .1
+                .map(|span| *span),
+            comment
+        );
+        assert_eq!(
+            comment_or_space(" ; FOO".into())
+                .unwrap()
+                .1
+                .map(|span| *span),
+            comment
+        );
     }
 
     #[test]
@@ -142,7 +156,10 @@ mod tests {
         ];
         for comment in comments {
             assert_eq!(
-                comment_or_space(Span::new(format!(";{comment}").as_str())).unwrap().1.map(|span| *span),
+                comment_or_space(Span::new(format!(";{comment}").as_str()))
+                    .unwrap()
+                    .1
+                    .map(|span| *span),
                 Some(comment),
             );
         }
@@ -150,13 +167,13 @@ mod tests {
 
     #[test]
     fn should_parse_symbol_table_comment() {
-        let comments = vec![
-            "> EXPORT",
-            "< IMPORT",
-        ];
+        let comments = vec!["> EXPORT", "< IMPORT"];
         for comment in comments {
             assert_eq!(
-                comment_or_space(Span::new(format!(";{comment}").as_str())).unwrap().1.map(|span| *span),
+                comment_or_space(Span::new(format!(";{comment}").as_str()))
+                    .unwrap()
+                    .1
+                    .map(|span| *span),
                 Some(comment),
             );
         }

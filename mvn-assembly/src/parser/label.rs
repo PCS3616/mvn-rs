@@ -3,16 +3,15 @@ use nom::combinator::{map, not};
 use nom::sequence::terminated;
 use utils::error_or;
 
-use crate::types::{Label, Instruction};
 use super::error::{LocatedIResult, Span};
 use super::identifier;
 use super::Parse;
+use crate::types::{Instruction, Label};
 
 impl<'a> Parse<'a> for Label<'a> {
     fn parse_assembler(input: Span<'a>) -> LocatedIResult<'a, Self> {
-        let label = not(terminated(Instruction::parse_assembler, space1))(input).and_then(
-            |(input, _)| map(identifier, |out: &str| Self::new(out))(input)
-        );
+        let label = not(terminated(Instruction::parse_assembler, space1))(input)
+            .and_then(|(input, _)| map(identifier, Self::new)(input));
         error_or!(
             label,
             input,
@@ -23,9 +22,9 @@ impl<'a> Parse<'a> for Label<'a> {
 
 #[cfg(test)]
 mod tests {
-    use pretty_assertions::assert_eq;
-    use crate::types::mneumonic::*;
     use super::*;
+    use crate::types::mneumonic::*;
+    use pretty_assertions::assert_eq;
 
     fn normal_mneumonics() -> [NormalMneumonic; 17] {
         [
@@ -59,10 +58,7 @@ mod tests {
     }
 
     fn relational_mneumonics() -> [RelationalMneumonic; 2] {
-        [
-            RelationalMneumonic::Export,
-            RelationalMneumonic::Import,
-        ]
+        [RelationalMneumonic::Export, RelationalMneumonic::Import]
     }
 
     #[test]

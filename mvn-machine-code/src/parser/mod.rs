@@ -16,8 +16,8 @@ pub trait Relocate: Sized {
     fn relocate(self, base: AddressPosition) -> Self;
 }
 
-use utils::types::Token;
 use nom_locate::position;
+use utils::types::Token;
 
 impl<'a, T: Parse<'a>> Parse<'a> for Token<T> {
     fn parse_machine_code(input: error::Span<'a>) -> error::LocatedIResult<'a, Self> {
