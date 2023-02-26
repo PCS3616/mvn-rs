@@ -60,7 +60,7 @@ fn print_error(program: &str, error: MvnReportError) {
         },
     };
     let dl = DisplayList::from(snippet);
-    println!("{}", dl);
+    eprintln!("{}", dl);
 }
 
 // fn write_program(program: AddressedProgram, label_map: LabelMap, output: impl fmt::Write) {

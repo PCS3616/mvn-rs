@@ -12,7 +12,7 @@ pub fn print(processor_output: Result<ProgramsProcessor, MvnReportError>) {
 }
 
 fn print_error(error: MvnReportError) {
-    println!("{error:#?}");
+    eprintln!("{error:#?}");
 }
 
 fn print_program(processor: ProgramsProcessor) {
