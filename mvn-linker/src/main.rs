@@ -9,7 +9,7 @@ fn main() {
         1000 0001 ; < FOO
         0000 0002 ; > RESULT
         0000 0004 ;         JP  MAIN
-        0002 0000 ; RESULT  $   /2
+        0002 0000 ; RESULT  $   /1
         0004 3003 ; MAIN    LV  /3
         1006 A000 ;         SC  ADD_TWO
         1008 9001 ;         MM  FOO
@@ -20,7 +20,7 @@ fn main() {
         6100 0102 ; > ADD_TWO
         5000 0000 ; < RESULT
         4100 0002 ; TWO         K   /2
-        4102 0000 ; ADD_TWO     $   /2
+        4102 0000 ; ADD_TWO     $   /1
         6104 4100 ;             AD  TWO
         5106 9000 ;             MM  RESULT
         6108 B102 ;             RS  ADD_TWO
