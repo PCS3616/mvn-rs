@@ -4,9 +4,9 @@ use crate::processor::program::{ProgramsProcessor, RelocatableLabel};
 use crate::types::AddressPosition;
 use crate::types::{AddressedLine, MachineAddress, MachineAddressProperties, Operation, Instruction, Operand, mneumonic::RelationalMneumonic, Label};
 
-pub fn print(processor_output: Result<ProgramsProcessor, MvnReportError>) {
+pub fn print(processor_output: Result<ProgramsProcessor, MvnReportError>, complete_linkage: bool) {
     match processor_output {
-        Ok(processor) => print_program(processor),
+        Ok(processor) => print_program(processor, complete_linkage),
         Err(error) => print_error(error),
     }
 }
@@ -15,9 +15,13 @@ fn print_error(error: MvnReportError) {
     eprintln!("{error:#?}");
 }
 
-fn print_program(processor: ProgramsProcessor) {
+fn print_program(processor: ProgramsProcessor, complete_linkage: bool) {
     for line in processor.linked_program {
         println!("{line}");
+    }
+
+    if complete_linkage {
+        return
     }
 
     for (export_label, export_position) in processor.export_map.into_iter() {

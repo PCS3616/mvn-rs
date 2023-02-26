@@ -59,7 +59,7 @@ fn main() {
                 .collect();
             let programs: Vec<&str> = programs.iter().map(String::as_str).collect();
             let process_result = linker::processor::process(programs, *complete);
-            linker::writer::print(process_result);
+            linker::writer::print(process_result, *complete);
         },
         Commands::Relocate { input, base } => {
             let program = read_to_string(input);

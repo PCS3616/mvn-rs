@@ -26,7 +26,8 @@ fn main() {
         6108 B102 ;             RS  ADD_TWO
     "};
 
+    let complete_linkage = false;
     let programs = vec![main_program, subroutine_program];
-    let processor = process(programs, false);
-    print(processor);
+    let processor = process(programs, complete_linkage);
+    print(processor, complete_linkage);
 }
