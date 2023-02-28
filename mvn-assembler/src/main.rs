@@ -1,27 +1,19 @@
-use indoc::indoc;
+use std::io;
 
 use mvn_assembler::processor::process;
 use mvn_assembler::writer::print;
 
 fn main() {
-    let program = indoc! {"
-        < IMPORTED
-        > RESERVE
-        > TWO
-        @ /10
-                JP  MAIN
-        TWO     K   /2 ; This is an inline comment
-        & /200
-        FOUR    K   /4
-        RESERVE $   /4
-        ; This is a comment
-        MAIN    LD  TWO
-        & /100
-                AD  FOUR
-                MM  RESERVE
-                HM  /0
-        # MAIN
-    "};
-    let validator_output = process(program);
-    print(program, validator_output);
+    let program = io::stdin()
+        .lines()
+        .map(|result| result.expect("unable to read from stdin"))
+        .reduce(|mut acc, result| {
+            acc.push('\n');
+            acc.push_str(&result);
+            acc
+        });
+    if let Some(program) = program {
+        let validator_output = process(&program);
+        print(&program, validator_output);
+    }
 }
