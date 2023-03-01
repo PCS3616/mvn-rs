@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 indoc = "1.0.6"
 nom = "7.1.1"
+clap = { version = "4.1.4", features = ["derive"] }
 utils = { path = "../mvn-utils", package = "mvn-utils" }
 machine-code = { path = "../mvn-machine-code", package = "mvn-machine-code" }
 assembly = { path = "../mvn-assembly", package = "mvn-assembly" }

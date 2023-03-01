@@ -1,7 +1,8 @@
-use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
-use clap::{ArgAction, ArgGroup, Parser, Subcommand};
+use clap::{Parser, Subcommand};
+use utils::io::{file_exists, read_to_string};
+use utils::Executor;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -18,24 +19,7 @@ enum Commands {
         #[arg(short, long, value_parser = file_exists)]
         input: PathBuf,
     },
-    #[command(group(
-        ArgGroup::new("linkage-type")
-        .required(true)
-        .args(["partial", "complete"])
-    ))]
-    Link {
-        #[arg(
-            short,
-            long = "input",
-            action = ArgAction::Append,
-            value_parser = file_exists
-        )]
-        inputs: Vec<PathBuf>,
-        #[arg(long)]
-        partial: bool,
-        #[arg(long)]
-        complete: bool,
-    },
+    Link(linker::Args),
     Relocate {
         #[arg(short, long, value_parser = file_exists)]
         input: PathBuf,
@@ -52,16 +36,7 @@ fn main() {
             let process_result = assembler::processor::process(&program);
             assembler::writer::print(&program, process_result);
         }
-        Commands::Link {
-            inputs,
-            partial: _,
-            complete,
-        } => {
-            let programs: Vec<String> = inputs.iter().map(read_to_string).collect();
-            let programs: Vec<&str> = programs.iter().map(String::as_str).collect();
-            let process_result = linker::processor::process(programs, *complete);
-            linker::writer::print(process_result, *complete);
-        }
+        Commands::Link(args) => args.execute(),
         Commands::Relocate { input, base } => {
             let program = read_to_string(input);
             let process_result = relocator::processor::process(&program, *base);
@@ -70,18 +45,3 @@ fn main() {
     }
 }
 
-fn file_exists(path: &str) -> Result<PathBuf, &'static str> {
-    let path = Path::new(path);
-    if let Ok(exists) = path.try_exists() {
-        if exists {
-            return Ok(path.to_path_buf());
-        }
-    }
-    Err("input file does not exist")
-}
-
-fn read_to_string(path: &PathBuf) -> String {
-    fs::read_to_string(path)
-        .expect("failed to read file")
-        .to_uppercase()
-}

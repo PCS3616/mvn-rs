@@ -9,6 +9,7 @@ default-run = "mvn-cli"
 [dependencies]
 clap = { version = "4.1.4", features = ["derive"] }
 clap-num = "1.0.2"
+utils = { path = "../mvn-utils", package = "mvn-utils" }
 assembler = { path = "../mvn-assembler", package = "mvn-assembler" }
 linker = { path = "../mvn-linker", package = "mvn-linker" }
 relocator = { path = "../mvn-relocator", package = "mvn-relocator" }

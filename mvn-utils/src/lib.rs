@@ -1,5 +1,13 @@
 pub mod error;
+pub mod io;
 pub mod types;
+
+pub trait Executor {
+    fn execute(&self);
+}
+
+// TODO Move this code out of `lib.rs` and into its own module
+// Perhaps `parsers.rs`
 
 use error::{LocatedIResult, Span};
 use nom::character::complete::{char, line_ending, not_line_ending, space0};
