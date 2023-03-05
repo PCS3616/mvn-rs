@@ -1,0 +1,12 @@
+[package]
+name = "mvn-relocator"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+indoc = "1.0.6"
+nom = "7.1.1"
+utils = { path = "../mvn-utils", package = "mvn-utils" }
+machine-code = { path = "../mvn-machine-code", package = "mvn-machine-code" }

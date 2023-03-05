@@ -1,0 +1,16 @@
+[package]
+name = "mvn-assembler"
+version = "0.1.0-alpha"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+indoc = "1.0.6"
+nom = "7.1.1"
+annotate-snippets = { version = "0.9.1", features = ["color"] }
+assembly = { path = "../mvn-assembly", package = "mvn-assembly" }
+utils = { path = "../mvn-utils", package = "mvn-utils" }
+
+[dev-dependencies]
+pretty_assertions = "1.2.1"
