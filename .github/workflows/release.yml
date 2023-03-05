@@ -131,9 +131,7 @@ jobs:
         echo ::set-output name=BIN_PATH::${BIN_PATH}
         echo ::set-output name=BIN_NAME::${BIN_NAME}
 
-
-
-    - name: "Artifact upload: binnary"
+    - name: "Artifact upload: binary"
       uses: actions/upload-artifact@master
       with:
         name: ${{ matrix.job.target }}
