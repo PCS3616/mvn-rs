@@ -71,6 +71,22 @@ jobs:
         rustup default
         cargo -V
         rustc -V
+        
+    - name: Set testing options
+      id: test-options
+      shell: bash
+      run: |
+        # test only library unit tests and binary for arm-type targets
+        unset CARGO_TEST_OPTIONS
+        unset CARGO_TEST_OPTIONS ; case ${{ matrix.job.target }} in arm-* | aarch64-*) CARGO_TEST_OPTIONS="--bin ${PROJECT_NAME}" ;; esac;
+        echo ::set-output name=CARGO_TEST_OPTIONS::${CARGO_TEST_OPTIONS}
+
+    - name: Run tests
+      uses: actions-rs/cargo@v1
+      with:
+        use-cross: ${{ matrix.job.use-cross }}
+        command: test
+        args: --locked --target=${{ matrix.job.target }} ${{ steps.test-options.outputs.CARGO_TEST_OPTIONS}}
 
     - name: Build
       uses: actions-rs/cargo@v1
@@ -115,21 +131,7 @@ jobs:
         echo ::set-output name=BIN_PATH::${BIN_PATH}
         echo ::set-output name=BIN_NAME::${BIN_NAME}
 
-    - name: Set testing options
-      id: test-options
-      shell: bash
-      run: |
-        # test only library unit tests and binary for arm-type targets
-        unset CARGO_TEST_OPTIONS
-        unset CARGO_TEST_OPTIONS ; case ${{ matrix.job.target }} in arm-* | aarch64-*) CARGO_TEST_OPTIONS="--bin ${PROJECT_NAME}" ;; esac;
-        echo ::set-output name=CARGO_TEST_OPTIONS::${CARGO_TEST_OPTIONS}
 
-    - name: Run tests
-      uses: actions-rs/cargo@v1
-      with:
-        use-cross: ${{ matrix.job.use-cross }}
-        command: test
-        args: --locked --target=${{ matrix.job.target }} ${{ steps.test-options.outputs.CARGO_TEST_OPTIONS}}
 
     - name: "Artifact upload: binnary"
       uses: actions/upload-artifact@master
