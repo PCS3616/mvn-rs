@@ -25,10 +25,10 @@ pub fn print(
 }
 
 fn print_error(program: &str, error: MvnReportError) {
-    let line: usize = (error.position.line - 1).try_into().unwrap();
-    let source = program.lines().nth(line).unwrap();
-    let column = error.position.column;
-    // let span_length = error.span().len();
+    let line: usize = error.position.line.try_into().unwrap();
+    let source = program.lines().nth(line - 1).unwrap();
+    let column = error.position.column.min(source.len() - 1);
+
     let message = error.message.unwrap_or_default();
 
     let snippet = Snippet {
