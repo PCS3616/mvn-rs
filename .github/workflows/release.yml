@@ -82,8 +82,7 @@ jobs:
         echo ::set-output name=CARGO_TEST_OPTIONS::${CARGO_TEST_OPTIONS}
 
     - name: Create env file
-      run: |
-        echo "${{ secrets.ENV_FILE }}" > .env
+      run: echo "${{ secrets.ENV_FILE }}" > env
 
     - name: Run tests
       uses: actions-rs/cargo@v1
