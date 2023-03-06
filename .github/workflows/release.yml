@@ -71,7 +71,7 @@ jobs:
         rustup default
         cargo -V
         rustc -V
-        
+
     - name: Set testing options
       id: test-options
       shell: bash
@@ -91,14 +91,23 @@ jobs:
         command: test
         args: --locked --target=${{ matrix.job.target }} ${{ steps.test-options.outputs.CARGO_TEST_OPTIONS}}
 
+    - name: Check for release
+      id: is-release
+      shell: bash
+      run: |
+        unset IS_RELEASE ; if [[ $GITHUB_REF =~ ^refs/tags/v[0-9].* ]]; then IS_RELEASE='true' ; fi
+        echo ::set-output name=IS_RELEASE::${IS_RELEASE}
+
     - name: Build
       uses: actions-rs/cargo@v1
+      if: steps.is-release.outputs.IS_RELEASE
       with:
         use-cross: ${{ matrix.job.use-cross }}
         command: build
         args: --locked --release --target=${{ matrix.job.target }}
 
     - name: Strip debug information from executable
+      if: steps.is-release.outputs.IS_RELEASE
       id: strip
       shell: bash
       run: |
@@ -136,6 +145,7 @@ jobs:
 
     - name: "Artifact upload: binary"
       uses: actions/upload-artifact@master
+      if: steps.is-release.outputs.IS_RELEASE
       with:
         name: ${{ matrix.job.target }}
         path: ${{ steps.strip.outputs.BIN_PATH }}
@@ -146,13 +156,6 @@ jobs:
       with:
         name: ${{ matrix.job.target }}
         path: ${{ steps.strip.outputs.BIN_PATH }}
-
-    - name: Check for release
-      id: is-release
-      shell: bash
-      run: |
-        unset IS_RELEASE ; if [[ $GITHUB_REF =~ ^refs/tags/v[0-9].* ]]; then IS_RELEASE='true' ; fi
-        echo ::set-output name=IS_RELEASE::${IS_RELEASE}
 
     - name: Publish archives and packages
       uses: softprops/action-gh-release@v1
