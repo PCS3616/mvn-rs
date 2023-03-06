@@ -81,8 +81,8 @@ jobs:
         unset CARGO_TEST_OPTIONS ; case ${{ matrix.job.target }} in arm-* | aarch64-*) CARGO_TEST_OPTIONS="--bin ${PROJECT_NAME}" ;; esac;
         echo ::set-output name=CARGO_TEST_OPTIONS::${CARGO_TEST_OPTIONS}
 
-    - name: Create env file
-      run: echo "${{ secrets.ENV_FILE }}" > env
+    - name: Create dotenv file
+      run: echo "${{ secrets.ENV_FILE }}" > .env
 
     - name: Run tests
       uses: actions-rs/cargo@v1
