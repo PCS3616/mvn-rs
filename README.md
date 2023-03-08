@@ -56,5 +56,5 @@ foi desenvolvido com os módulos `principal.asm` e `secundario.asm`.
    É obrigatório passar a base de relocação (`--base` ou `-b`), ainda que em
    geral utilizemos 0.
   ```shell
-  $ mvn-cli assemble -i programa.lig --base 0 > programa.mvn
+  $ mvn-cli relocate -i programa.lig --base 0 > programa.mvn
   ```
