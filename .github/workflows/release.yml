@@ -145,14 +145,6 @@ jobs:
 
     - name: "Artifact upload: binary"
       uses: actions/upload-artifact@master
-      if: steps.is-release.outputs.IS_RELEASE
-      with:
-        name: ${{ matrix.job.target }}
-        path: ${{ steps.strip.outputs.BIN_PATH }}
-
-    - name: "Artifact upload: Debian package"
-      uses: actions/upload-artifact@master
-      if: steps.debian-package.outputs.DPKG_NAME
       with:
         name: ${{ matrix.job.target }}
         path: ${{ steps.strip.outputs.BIN_PATH }}
