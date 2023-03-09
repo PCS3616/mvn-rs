@@ -100,14 +100,12 @@ jobs:
 
     - name: Build
       uses: actions-rs/cargo@v1
-      if: steps.is-release.outputs.IS_RELEASE
       with:
         use-cross: ${{ matrix.job.use-cross }}
         command: build
         args: --locked --release --target=${{ matrix.job.target }}
 
     - name: Strip debug information from executable
-      if: steps.is-release.outputs.IS_RELEASE
       id: strip
       shell: bash
       run: |
