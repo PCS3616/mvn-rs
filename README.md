@@ -22,7 +22,7 @@ $ ./mvn-cli --help
 
 ## Uso
 
-### Programas exclusivamente com endereços absolutos
+### Programas exclusivamente com endereços absolutos e sem relacionamento
 
 Para executar programas escritos em linguagem de montagem, eles precisam
 estar em linguagem de máquina no formato MVN. Essa transposição deve ser feita usando o
@@ -30,6 +30,23 @@ montador como no exemplo a seguir:
 ```shell
 $ mvn-cli assemble -i absoluto.asm > absoluto.mvn
 ```
+
+### Programas exclusivamente com endereços absolutos e com relacionamento
+
+Caso o seu programa importe ou exporte símbolso, é necessário realizar a 
+montagem seguida de ligação somente daquele programa com a flag `--complete`
+
+1. A montagem é análoga à do programa absoluto sem relacionamentos, mas é gerado
+   um arquivo INT em vez de um MVN:
+   ```shell
+   $ mvn-cli assemble -i relacionamentos.mvn > relacionamentos.int
+   ```
+
+2. Em seguida, o arquivo é passado pelo ligador para remover a tabela de símbolos
+   e gerar o MVN:
+   ```shell
+   $ mvn-cli link -i relacionamentos.int --complete > relacionamentos.mvn
+   ```
 
 ### Programas com endereços relocáveis
 
