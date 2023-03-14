@@ -33,7 +33,7 @@ $ mvn-cli assemble -i absoluto.asm > absoluto.mvn
 
 ### Programas exclusivamente com endereços absolutos e com relacionamento
 
-Caso o seu programa importe ou exporte símbolso, é necessário realizar a 
+Caso o seu programa importe ou exporte símbolos, é necessário realizar a 
 montagem seguida de ligação somente daquele programa com a flag `--complete`
 
 1. A montagem é análoga à do programa absoluto sem relacionamentos, mas é gerado
@@ -64,14 +64,14 @@ foi desenvolvido com os módulos `principal.asm` e `secundario.asm`.
    arquivo LIG caso todos os símbolos estejam resolvidos.
    No lugar da flag `--complete`, é possível passar a flag `--partial` para
    realizar ligação parcial, usada para gerar bibliotecas e não executáveis
-  ```shell
-  $ mvn-cli link -i principal.int -i secundario.int --complete > programa.lig
-  ```
+   ```shell
+   $ mvn-cli link -i principal.int -i secundario.int --complete > programa.lig
+   ```
 
 3. Por fim, é necessário relocar o programa LIG ligado para gerar um
    executável MVN com endereços absolutos.
    É obrigatório passar a base de relocação (`--base` ou `-b`), ainda que em
    geral utilizemos 0.
-  ```shell
-  $ mvn-cli relocate -i programa.lig --base 0 > programa.mvn
-  ```
+   ```shell
+   $ mvn-cli relocate -i programa.lig --base 0 > programa.mvn
+   ```
