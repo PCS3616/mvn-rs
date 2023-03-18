@@ -1,6 +1,8 @@
+use std::collections::BTreeSet;
+
 use crate::types::{mneumonic, Instruction, Line, Operand};
 
-use crate::processor::address::{Address, AddressedProgram, LabelMap};
+use crate::processor::address::{Address, AddressedProgram, LabelMap, AddressedLine};
 
 use super::MvnReportError;
 
@@ -10,6 +12,8 @@ pub fn validate<'a, 'b>(
     program: &'a AddressedProgram<'b>,
     label_map: &'a LabelMap<'b>,
 ) -> ValidatorResult<'b> {
+    let validator = ProgramValidator::new(&program, &label_map);
+    validator.validate()?;
     for line in program.lines.iter() {
         let validator = LineValidator::new(&line.line, &line.address, label_map);
         validator.validate()?;
@@ -17,6 +21,9 @@ pub fn validate<'a, 'b>(
     Ok(())
 }
 
+// `label_map` is not required right now but it might be in future tests,
+// so keep it in the struct despite being dead code
+#[allow(dead_code)]
 struct ProgramValidator<'a, 'b> {
     program: &'a AddressedProgram<'b>,
     label_map: &'a LabelMap<'b>,
@@ -34,7 +41,25 @@ struct LineValidator<'a, 'b> {
  */
 
 impl <'b> ProgramValidator<'_, 'b> {
+    pub fn validate(self) -> ValidatorResult<'b> {
+        self.labels_defined_more_than_once()?;
+        Ok(())
+    }
 
+    fn labels_defined_more_than_once(&self) -> ValidatorResult<'b> {
+        let mut label_set = BTreeSet::new();
+        for AddressedLine { address: _, line } in self.program.lines.iter().filter(|addressed_line| addressed_line.line.label.is_some()) {
+            if let Some(label) = &line.label {
+                if !label_set.insert(label.value.clone()) {
+                    return Err(MvnReportError::new(
+                        label.position,
+                        Some("label was already defined".to_string())
+                    ))
+                }
+            }
+        }
+        Ok(())
+    }
 }
 
 impl<'b> LineValidator<'_, 'b> {
@@ -188,6 +213,7 @@ mod tests {
      */
 
     struct TestProgram {
+        repeated_label: bool,
         import: Operand<'static>,
         constant: u32,
         position: Operand<'static>,
@@ -198,6 +224,7 @@ mod tests {
     impl Default for TestProgram {
         fn default() -> Self {
             Self {
+                repeated_label: false,
                 import: "IMPORT".into(),
                 constant: 0x1,
                 position: 0x100.into(),
@@ -214,6 +241,11 @@ mod tests {
         }
 
         fn render(self) -> (AddressedProgram<'static>, LabelMap<'static>) {
+            let main_label: Label = if self.repeated_label {
+                "ONE".into()
+            } else {
+                "MAIN".into()
+            };
             let main_position = if let Operand::Numeric(immediate) = self.position {
                 immediate
             } else {
@@ -275,7 +307,7 @@ mod tests {
                         ..Default::default()
                     },
                     Line::new(
-                        Some(Token::new(Position::new(8, 1), "MAIN".into())),
+                        Some(Token::new(Position::new(8, 1), main_label)),
                         Operation::new(
                             Token::new(
                                 Position::new(8, 9),
@@ -330,6 +362,7 @@ mod tests {
         }
     }
 
+
     #[test]
     // fn symbolic_operand_on_import_export_should_pass() {
     fn default_should_pass() {
@@ -337,10 +370,20 @@ mod tests {
         assert!(test_program.validate().is_ok());
     }
 
+    #[test]
+    fn  repeated_labels_should_fail() {
+        let test_program = TestProgram {
+            repeated_label: true,
+            ..Default::default()
+        };
+        assert!(test_program.validate().is_err());
+    }
+
     // #[test]
     // fn symbolic_operand_on_import_export_should_pass() {
 
     // }
+
     #[test]
     fn numeric_operand_on_import_export_should_fail() {
         let test_program = TestProgram {
