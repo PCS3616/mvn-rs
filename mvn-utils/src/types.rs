@@ -64,3 +64,12 @@ impl<T: fmt::UpperHex> fmt::UpperHex for Token<T> {
         write!(f, "{:X}", &self.value)
     }
 }
+
+impl<T: Clone> Clone for Token<T> {
+    fn clone(&self) -> Self {
+        Self {
+            value: self.value.clone(),
+            position: self.position,
+        }
+    }
+}
