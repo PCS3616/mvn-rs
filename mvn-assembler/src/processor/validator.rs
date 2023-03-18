@@ -17,10 +17,24 @@ pub fn validate<'a, 'b>(
     Ok(())
 }
 
+struct ProgramValidator<'a, 'b> {
+    program: &'a AddressedProgram<'b>,
+    label_map: &'a LabelMap<'b>,
+}
+
 struct LineValidator<'a, 'b> {
     line: &'a Line<'b>,
     address: &'a Address,
     label_map: &'a LabelMap<'b>,
+}
+
+/* Every validator function's name should
+ * answer the question: "Does the program
+ * contain {name}?"
+ */
+
+impl <'b> ProgramValidator<'_, 'b> {
+
 }
 
 impl<'b> LineValidator<'_, 'b> {
@@ -33,10 +47,6 @@ impl<'b> LineValidator<'_, 'b> {
         Ok(())
     }
 
-    /* Every validator function's name should
-     * answer the question: "Does the program
-     * contain {name}?"
-     */
 
     fn numeric_operand_on_import_export(&self) -> ValidatorResult<'b> {
         match &self.line.operation.instruction.value {
@@ -129,6 +139,15 @@ impl<'b> LineValidator<'_, 'b> {
                 }
             },
             _ => Ok(()),
+        }
+    }
+}
+
+impl<'a, 'b> ProgramValidator<'a, 'b> {
+    fn new(program: &'a AddressedProgram<'b>, label_map: &'a LabelMap<'b>) -> Self {
+        Self {
+            program,
+            label_map,
         }
     }
 }
