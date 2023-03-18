@@ -2,7 +2,7 @@ use std::collections::BTreeSet;
 
 use crate::types::{mneumonic, Instruction, Line, Operand};
 
-use crate::processor::address::{Address, AddressedProgram, LabelMap, AddressedLine};
+use crate::processor::address::{Address, AddressedLine, AddressedProgram, LabelMap};
 
 use super::MvnReportError;
 
@@ -12,7 +12,7 @@ pub fn validate<'a, 'b>(
     program: &'a AddressedProgram<'b>,
     label_map: &'a LabelMap<'b>,
 ) -> ValidatorResult<'b> {
-    let validator = ProgramValidator::new(&program, &label_map);
+    let validator = ProgramValidator::new(program, label_map);
     validator.validate()?;
     for line in program.lines.iter() {
         let validator = LineValidator::new(&line.line, &line.address, label_map);
@@ -40,7 +40,7 @@ struct LineValidator<'a, 'b> {
  * contain {name}?"
  */
 
-impl <'b> ProgramValidator<'_, 'b> {
+impl<'b> ProgramValidator<'_, 'b> {
     pub fn validate(self) -> ValidatorResult<'b> {
         self.labels_defined_more_than_once()?;
         Ok(())
@@ -48,13 +48,18 @@ impl <'b> ProgramValidator<'_, 'b> {
 
     fn labels_defined_more_than_once(&self) -> ValidatorResult<'b> {
         let mut label_set = BTreeSet::new();
-        for AddressedLine { address: _, line } in self.program.lines.iter().filter(|addressed_line| addressed_line.line.label.is_some()) {
+        for AddressedLine { address: _, line } in self
+            .program
+            .lines
+            .iter()
+            .filter(|addressed_line| addressed_line.line.label.is_some())
+        {
             if let Some(label) = &line.label {
                 if !label_set.insert(label.value.clone()) {
                     return Err(MvnReportError::new(
                         label.position,
-                        Some("label was already defined".to_string())
-                    ))
+                        Some("label was already defined".to_string()),
+                    ));
                 }
             }
         }
@@ -71,7 +76,6 @@ impl<'b> LineValidator<'_, 'b> {
         self.numeric_operand_too_wide()?;
         Ok(())
     }
-
 
     fn numeric_operand_on_import_export(&self) -> ValidatorResult<'b> {
         match &self.line.operation.instruction.value {
@@ -170,10 +174,7 @@ impl<'b> LineValidator<'_, 'b> {
 
 impl<'a, 'b> ProgramValidator<'a, 'b> {
     fn new(program: &'a AddressedProgram<'b>, label_map: &'a LabelMap<'b>) -> Self {
-        Self {
-            program,
-            label_map,
-        }
+        Self { program, label_map }
     }
 }
 
@@ -362,7 +363,6 @@ mod tests {
         }
     }
 
-
     #[test]
     // fn symbolic_operand_on_import_export_should_pass() {
     fn default_should_pass() {
@@ -371,7 +371,7 @@ mod tests {
     }
 
     #[test]
-    fn  repeated_labels_should_fail() {
+    fn repeated_labels_should_fail() {
         let test_program = TestProgram {
             repeated_label: true,
             ..Default::default()

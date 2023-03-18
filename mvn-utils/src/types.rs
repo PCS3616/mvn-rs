@@ -65,7 +65,7 @@ impl<T: fmt::UpperHex> fmt::UpperHex for Token<T> {
     }
 }
 
-impl <T: Clone> Clone for Token<T> {
+impl<T: Clone> Clone for Token<T> {
     fn clone(&self) -> Self {
         Self {
             value: self.value.clone(),
